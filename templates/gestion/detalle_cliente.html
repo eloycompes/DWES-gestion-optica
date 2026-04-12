@@ -41,6 +41,43 @@
                     {% endif %}
                 </div>
             </div>
+            
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-success text-white d-flex justify-content-between">
+                    <span>Historial de Compras (Pedidos)</span>
+                    <a href="/admin/gestion/pedido/add/" class="btn btn-sm btn-light">+ Nueva Venta</a>
+                </div>
+                <div class="card-body">
+                    {% if pedidos %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Total</th>
+                                        <th>Productos</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in pedidos %}
+                                    <tr>
+                                        <td>{{ p.fecha|date:"d/m/Y" }}</td>
+                                        <td class="fw-bold">{{ p.total_importe }}€</td>
+                                        <td>
+                                            {% for prod in p.productos.all %}
+                                                <span class="badge bg-secondary" style="font-size: 0.7rem;">{{ prod.nombre }}</span>
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted py-3">No hay registros de ventas para este cliente.</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 </div>

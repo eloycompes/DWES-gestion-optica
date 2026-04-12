@@ -3,7 +3,7 @@ from .models import Cliente, Consulta
 from django.shortcuts import get_object_or_404
 
 def home(request):
-    return render(request, 'base.html')
+    return render(request, 'gestion/index.html')
 
 def lista_clientes(request):
     query = request.GET.get('q') # Capturamos lo que el usuario escribe
@@ -33,10 +33,12 @@ def lista_pedidos(request):
     return render(request, 'gestion/lista_pedidos.html', {'pedidos': pedidos})
 
 def detalle_cliente(request, cliente_id):
-    # Obtenemos el cliente y todas sus consultas asociadas
     cliente = get_object_or_404(Cliente, id=cliente_id)
     consultas = cliente.consulta_set.all().order_by('-fecha')
+    pedidos = cliente.pedido_set.all().order_by('-fecha') 
+    
     return render(request, 'gestion/detalle_cliente.html', {
         'cliente': cliente,
-        'consultas': consultas
+        'consultas': consultas,
+        'pedidos': pedidos
     })

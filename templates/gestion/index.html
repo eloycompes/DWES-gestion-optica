@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="p-5 mb-4 bg-light rounded-3 border">
+    <div class="container-fluid py-5 text-center">
+        <h1 class="display-5 fw-bold text-primary">Gestión Óptica DAW</h1>
+        <p class="fs-4 text-muted">Sistema integral de gestión de pacientes, graduaciones y ventas.</p>
+    </div>
+</div>
+
+<div class="row g-4 text-center">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <div class="display-6 mb-3">👥</div>
+                <h3 class="card-title">Clientes</h3>
+                <p class="card-text text-muted">Gestión de base de datos de pacientes y DNI.</p>
+                <a href="/clientes/" class="btn btn-primary w-100">Ver Listado</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <div class="display-6 mb-3">💰</div>
+                <h3 class="card-title">Ventas</h3>
+                <p class="card-text text-muted">Consulta de pedidos realizados y facturación.</p>
+                <a href="/pedidos/" class="btn btn-success w-100">Ver Pedidos</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-warning">
+            <div class="card-body">
+                <div class="display-6 mb-3">⚙️</div>
+                <h3 class="card-title">Admin</h3>
+                <p class="card-text text-muted">Alta de productos, fabricantes y usuarios.</p>
+                <a href="/admin/" class="btn btn-warning w-100 text-dark">Panel Técnico</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
