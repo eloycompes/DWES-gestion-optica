@@ -32,7 +32,7 @@ class Cliente(models.Model):
 class Fabricante(models.Model):
     nombre = models.CharField(max_length=100)
     contacto = models.CharField(max_length=100)
-    tipo_producto = models.CharField(max_length=100)
+    tipo_producto = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.nombre

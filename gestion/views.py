@@ -16,3 +16,9 @@ def detalle_consulta(request, consulta_id):
     consulta = get_object_or_404(Consulta, id=consulta_id)
     # Como es una relación OneToOne, accedemos a la graduación desde la consulta
     return render(request, 'gestion/detalle_consulta.html', {'consulta': consulta})
+
+from .models import Pedido # Añade Pedido a tus imports
+
+def lista_pedidos(request):
+    pedidos = Pedido.objects.all().order_by('-fecha') # Los más nuevos primero
+    return render(request, 'gestion/lista_pedidos.html', {'pedidos': pedidos})
