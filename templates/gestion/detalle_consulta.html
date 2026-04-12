@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between mb-4">
+        <h2>Detalle de Consulta - {{ consulta.cliente.nombre }}</h2>
+        <span class="badge bg-info text-dark">Fecha: {{ consulta.fecha }}</span>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">Anamnesis (Entrevista)</div>
+        <div class="card-body">
+            <p><strong>Motivo:</strong> {{ consulta.motivo }}</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Ant. Médicos:</strong> {{ consulta.ant_medicos|default:"Ninguno" }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Ant. Oculares:</strong> {{ consulta.ant_oculares|default:"Ninguno" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-primary">
+        <div class="card-header bg-success text-white">Datos de Graduación</div>
+        <div class="card-body">
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Ojo</th>
+                        <th>Esfera</th>
+                        <th>Cilindro</th>
+                        <th>Eje</th>
+                        <th>Adición</th>
+                        <th>AV</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>OD</strong> (Derecho)</td>
+                        <td>{{ consulta.graduacion.od_esfera }}</td>
+                        <td>{{ consulta.graduacion.od_cilindro }}</td>
+                        <td>{{ consulta.graduacion.od_eje }}°</td>
+                        <td>{{ consulta.graduacion.od_adicion }}</td>
+                        <td>{{ consulta.graduacion.od_agudeza }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>OI</strong> (Izquierdo)</td>
+                        <td>{{ consulta.graduacion.oi_esfera }}</td>
+                        <td>{{ consulta.graduacion.oi_cilindro }}</td>
+                        <td>{{ consulta.graduacion.oi_eje }}°</td>
+                        <td>{{ consulta.graduacion.oi_adicion }}</td>
+                        <td>{{ consulta.graduacion.oi_agudeza }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

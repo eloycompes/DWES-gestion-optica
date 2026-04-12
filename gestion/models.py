@@ -15,7 +15,7 @@ class Usuario(AbstractUser):
     apellidos = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.username} - {self.rol}"
+        return f"{self.first_name} {self.last_name} ({self.rol})"
 
 # Clase Cliente
 class Cliente(models.Model):
@@ -26,7 +26,7 @@ class Cliente(models.Model):
     fecha_nacimiento = models.DateField()
 
     def __str__(self):
-        return f"{self.nombre} {self.apellidos}"
+        return f"{self.nombre} {self.apellidos} - {self.dni}"
 
 # Clase Fabricante
 class Fabricante(models.Model):
@@ -72,6 +72,9 @@ class Consulta(models.Model):
     lentillas = models.BooleanField(default=False)
     recomendaciones = models.TextField(blank=True)
 
+    def __str__(self):
+        return f"{self.cliente.apellidos}, {self.cliente.nombre} ({self.fecha}) - {self.id}"
+
 # Clase Graduacion (Composición 1:1 con Consulta)
 class Graduacion(models.Model):
     consulta = models.OneToOneField(Consulta, on_delete=models.CASCADE, primary_key=True)
@@ -88,6 +91,9 @@ class Graduacion(models.Model):
     queratometria = models.TextField()
     biomicroscopio = models.TextField()
     tanometria = models.TextField()
+
+    def __str__(self):
+        return f"{self.consulta.cliente.apellidos}, {self.consulta.cliente.nombre} ({self.consulta.fecha}) - {self.consulta.id}"
 
 # Clase Pedido
 class Pedido(models.Model):
