@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">Ficha del Cliente</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ cliente.nombre }} {{ cliente.apellidos }}</h4>
+                    <p><strong>DNI:</strong> {{ cliente.dni }}</p>
+                    <p><strong>Teléfono:</strong> {{ cliente.telefono }}</p>
+                    <p><strong>Email:</strong> {{ cliente.email|default:"No dispone" }}</p>
+                    <hr>
+                    <small class="text-muted">ID Sistema: #{{ cliente.id }}</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between">
+                    <span>Historial de Consultas</span>
+                    <a href="/admin/gestion/consulta/add/" class="btn btn-sm btn-light">+ Nueva Consulta</a>
+                </div>
+                <div class="card-body">
+                    {% if consultas %}
+                        <div class="list-group">
+                        {% for c in consultas %}
+                            <a href="/consulta/{{ c.id }}/" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">Consulta: {{ c.motivo|truncatechars:40 }}</h6>
+                                    <small>{{ c.fecha|date:"d/m/Y" }}</small>
+                                </div>
+                                <small class="text-primary">Ver resultados de graduación &raquo;</small>
+                            </a>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center text-muted py-4">Este cliente aún no tiene consultas registradas.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
