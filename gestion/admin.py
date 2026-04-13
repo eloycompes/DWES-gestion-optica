@@ -1,43 +1,46 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Usuario, Cliente, Fabricante, Producto, Cita, Consulta, Graduacion, Pedido
+from .models import Usuario, Cliente, Cita, Consulta, Graduacion, Fabricante, Producto, Pedido
 
-# Registro del Usuario personalizado
-@admin.register(Usuario)
-class UsuarioPersonalizadoAdmin(UserAdmin):
+# Personalización del modelo de Usuario para que se vea el Rol en el Admin
+class CustomUserAdmin(UserAdmin):
+    model = Usuario
+    list_display = ['username', 'email', 'nombre', 'apellidos', 'rol', 'is_staff']
     fieldsets = UserAdmin.fieldsets + (
-        ('Información de Rol', {'fields': ('rol',)}),
+        ('Información de Rol', {'fields': ('rol', 'nombre', 'apellidos')}),
     )
-    list_display = ('username', 'email', 'nombre', 'apellidos', 'rol', 'is_staff')
-    list_filter = ('rol', 'is_staff', 'is_superuser')
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ('Información de Rol', {'fields': ('rol', 'nombre', 'apellidos')}),
+    )
 
-# Registro de Clientes
+admin.site.register(Usuario, CustomUserAdmin)
+
+# Configuración para que la Graduación aparezca dentro de la Consulta (Inline)
+class GraduacionInline(admin.StackedInline):
+    model = Graduacion
+    can_delete = False
+
+@admin.register(Consulta)
+class ConsultaAdmin(admin.ModelAdmin):
+    list_display = ('cliente', 'optico', 'fecha', 'motivo')
+    search_fields = ('cliente__nombre', 'cliente__dni')
+    inlines = [GraduacionInline] # Esto permite rellenar la graduación al crear la consulta
+
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
     list_display = ('dni', 'nombre', 'apellidos', 'telefono')
     search_fields = ('dni', 'nombre', 'apellidos')
 
-# Registro de Productos y Fabricantes
-admin.site.register(Fabricante)
+@admin.register(Cita)
+class CitaAdmin(admin.ModelAdmin):
+    list_display = ('fecha_hora', 'cliente', 'optico', 'estado')
+    list_filter = ('estado', 'fecha_hora')
 
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'categoria', 'precio', 'stock', 'fabricante')
+    list_display = ('nombre', 'categoria', 'fabricante', 'precio', 'stock')
     list_filter = ('categoria', 'fabricante')
     search_fields = ('nombre',)
 
-# Registro de Citas
-@admin.register(Cita)
-class CitaAdmin(admin.ModelAdmin):
-    list_display = ('cliente', 'optico', 'fecha_hora', 'estado')
-    list_filter = ('estado', 'fecha_hora')
-
-# Registro de Consulta y Graduación (pueden ir juntos)
-admin.site.register(Consulta)
-admin.site.register(Graduacion)
-
-# Registro de Pedidos
-@admin.register(Pedido)
-class PedidoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'cliente', 'fecha', 'total_importe', 'metodo_pago')
-    filter_horizontal = ('productos',)  # Facilita la selección múltiple de productos
+admin.site.register(Fabricante)
+admin.site.register(Pedido)
