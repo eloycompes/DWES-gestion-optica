@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <h4 class="mb-0">Examen Gabinete: {{ consulta.cliente.nombre }} {{ consulta.cliente.apellidos }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="row text-center mb-3">
+                    <div class="col-md-6"><h5 class="text-primary border-bottom pb-2">Ojo Derecho (OD)</h5></div>
+                    <div class="col-md-6"><h5 class="text-success border-bottom pb-2">Ojo Izquierdo (OI)</h5></div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6 border-end">
+                        <label class="form-label font-weight-bold">Esfera</label>
+                        {{ form.od_esfera }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label font-weight-bold">Esfera</label>
+                        {{ form.oi_esfera }}
+                    </div>
+
+                    <div class="col-md-6 border-end">
+                        <label class="form-label">Cilindro</label>
+                        {{ form.od_cilindro }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Cilindro</label>
+                        {{ form.oi_cilindro }}
+                    </div>
+
+                    <div class="col-md-6 border-end">
+                        <label class="form-label">Eje (°)</label>
+                        {{ form.od_eje }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Eje (°)</label>
+                        {{ form.oi_eje }}
+                    </div>
+
+                    <div class="col-md-6 border-end">
+                        <label class="form-label">Agudeza Visual (AV)</label>
+                        {{ form.od_agudeza }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Agudeza Visual (AV)</label>
+                        {{ form.oi_agudeza }}
+                    </div>
+
+                    <div class="col-md-6 border-end">
+                        <label class="form-label">Adición</label>
+                        {{ form.od_adicion }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Adición</label>
+                        {{ form.oi_adicion }}
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h5 class="mb-3 text-secondary">Otras Pruebas de Gabinete</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Queratometría</label>
+                        {{ form.queratometria }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tonometría (PIO)</label>
+                        {{ form.tanometria }}
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Biomicroscopía (Lámpara de hendidura)</label>
+                        {{ form.biomicroscopio }}
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-end">
+                    <a href="{% url 'detalle_cliente' consulta.cliente.id %}" class="btn btn-outline-secondary me-2">Cancelar</a>
+                    <button type="submit" class="btn btn-success px-5">Guardar Graduación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0">Nueva Consulta (Anamnesis): {{ cliente.nombre }}</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Motivo de la consulta</label>
+                            {{ form.motivo }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ant. Médicos</label>
+                                {{ form.ant_medicos }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Ant. Oculares</label>
+                                {{ form.ant_oculares }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Uso de pantallas / Horas</label>
+                            {{ form.pantallas }}
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.gafas_sol }}
+                                    <label class="form-check-label">Usa Gafas de Sol</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    {{ form.lentillas }}
+                                    <label class="form-check-label">Usa Lentillas</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Recomendaciones iniciales</label>
+                            {{ form.recomendaciones }}
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Guardar y Abrir Gabinete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

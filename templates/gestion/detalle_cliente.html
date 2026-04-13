@@ -2,80 +2,116 @@
 
 {% block content %}
 <div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb shadow-sm p-3 mb-4 bg-light rounded">
+            <li class="breadcrumb-item"><a href="{% url 'lista_clientes' %}" class="text-decoration-none">Clientes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Expediente: <strong>{{ cliente.nombre }} {{ cliente.apellidos }}</strong></li>
+        </ol>
+    </nav>
+
     <div class="row">
         <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">Ficha del Cliente</div>
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0"><i class="fas fa-user-circle me-2"></i>Datos Personales</h5>
+                </div>
                 <div class="card-body">
-                    <h4 class="card-title">{{ cliente.nombre }} {{ cliente.apellidos }}</h4>
-                    <p><strong>DNI:</strong> {{ cliente.dni }}</p>
-                    <p><strong>Teléfono:</strong> {{ cliente.telefono }}</p>
-                    <p><strong>Email:</strong> {{ cliente.email|default:"No dispone" }}</p>
+                    <div class="mb-3">
+                        <label class="text-muted small d-block">DNI / Identificación</label>
+                        <span class="h6">{{ cliente.dni }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small d-block">Nombre Completo</label>
+                        <span class="h6">{{ cliente.nombre }} {{ cliente.apellidos }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small d-block">Teléfono</label>
+                        <span class="h6">{{ cliente.telefono|default:"No disponible" }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small d-block">Email</label>
+                        <span class="h6">{{ cliente.email|default:"No disponible" }}</span>
+                    </div>
                     <hr>
-                    <small class="text-muted">ID Sistema: #{{ cliente.id }}</small>
+                    <p class="text-muted small">
+                        <i class="fas fa-calendar-alt me-1"></i> Alta: {{ cliente.fecha_registro|date:"d/m/Y" }}
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="/admin/gestion/cliente/{{ cliente.id }}/change/" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-edit me-1"></i> Editar datos básicos
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white d-flex justify-content-between">
-                    <span>Historial de Consultas</span>
-                    <a href="/admin/gestion/consulta/add/" class="btn btn-sm btn-light">+ Nueva Consulta</a>
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="card-title mb-0"><i class="fas fa-notes-medical me-2"></i>Historial de Consultas (Anamnesis)</h5>
+                    <a href="{% url 'crear_consulta' cliente.id %}" class="btn btn-sm btn-light text-dark fw-bold">
+                        + Nueva Consulta
+                    </a>
                 </div>
-                <div class="card-body">
-                    {% if consultas %}
-                        <div class="list-group">
-                        {% for c in consultas %}
-                            <a href="/consulta/{{ c.id }}/" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1">Consulta: {{ c.motivo|truncatechars:40 }}</h6>
-                                    <small>{{ c.fecha|date:"d/m/Y" }}</small>
-                                </div>
-                                <small class="text-primary">Ver resultados de graduación &raquo;</small>
-                            </a>
-                        {% endfor %}
-                        </div>
+                <div class="card-body p-0">
+                    {% if cliente.consultas.all %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light text-muted small">
+                                <tr>
+                                    <th class="ps-3">Fecha</th>
+                                    <th>Motivo / Observaciones</th>
+                                    <th class="text-end pe-3">Acciones Gabinete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for consulta in cliente.consultas.all %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <span class="badge bg-secondary">{{ consulta.fecha|date:"d/m/Y" }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ consulta.motivo|truncatechars:40 }}</div>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group shadow-sm">
+                                            <a href="{% url 'detalle_consulta' consulta.id %}" class="btn btn-sm btn-outline-info" title="Ver Anamnesis">
+                                                Ver
+                                            </a>
+                                            
+                                            {# Verificamos si la consulta ya tiene una graduación asociada #}
+                                            {% if not consulta.graduacion %}
+                                                <a href="{% url 'registrar_graduacion' consulta.id %}" class="btn btn-sm btn-primary">
+                                                    + Graduar
+                                                </a>
+                                            {% else %}
+                                                <a href="{% url 'registrar_graduacion' consulta.id %}" class="btn btn-sm btn-success text-white">
+                                                    Graduación <i class="fas fa-check-circle ms-1"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                     {% else %}
-                        <p class="text-center text-muted py-4">Este cliente aún no tiene consultas registradas.</p>
+                        <div class="p-4 text-center text-muted">
+                            <i class="fas fa-folder-open d-block mb-2 fa-2x"></i>
+                            Este cliente aún no tiene consultas registradas.
+                        </div>
                     {% endif %}
                 </div>
             </div>
-            
-            <div class="card shadow-sm mt-4">
-                <div class="card-header bg-success text-white d-flex justify-content-between">
-                    <span>Historial de Compras (Pedidos)</span>
-                    <a href="/admin/gestion/pedido/add/" class="btn btn-sm btn-light">+ Nueva Venta</a>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="card-title mb-0"><i class="fas fa-shopping-cart me-2"></i>Pedidos de Gafas / Lentes</h5>
+                    <button class="btn btn-sm btn-light" disabled>+ Nuevo Pedido</button>
                 </div>
-                <div class="card-body">
-                    {% if pedidos %}
-                        <div class="table-responsive">
-                            <table class="table table-sm table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Total</th>
-                                        <th>Productos</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for p in pedidos %}
-                                    <tr>
-                                        <td>{{ p.fecha|date:"d/m/Y" }}</td>
-                                        <td class="fw-bold">{{ p.total_importe }}€</td>
-                                        <td>
-                                            {% for prod in p.productos.all %}
-                                                <span class="badge bg-secondary" style="font-size: 0.7rem;">{{ prod.nombre }}</span>
-                                            {% endfor %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <p class="text-center text-muted py-3">No hay registros de ventas para este cliente.</p>
-                    {% endif %}
+                <div class="card-body py-4">
+                    <p class="text-center text-muted mb-0">No hay pedidos registrados actualmente.</p>
                 </div>
             </div>
         </div>

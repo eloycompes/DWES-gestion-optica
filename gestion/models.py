@@ -46,7 +46,7 @@ class Cita(models.Model):
 
 # 4. CONSULTA (ANAMNESIS)
 class Consulta(models.Model):
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='consultas')
     optico = models.ForeignKey(Usuario, on_delete=models.PROTECT, limit_choices_to={'rol': 'Optico'})
     fecha = models.DateField(auto_now_add=True)
     motivo = models.TextField()
@@ -62,26 +62,29 @@ class Consulta(models.Model):
 
 # 5. GRADUACIÓN
 class Graduacion(models.Model):
-    consulta = models.OneToOneField(Consulta, on_delete=models.CASCADE)
-    # Ojo Derecho
-    od_esfera = models.DecimalField(max_digits=5, decimal_places=2)
-    od_cilindro = models.DecimalField(max_digits=5, decimal_places=2)
-    od_eje = models.IntegerField()
-    od_adicion = models.DecimalField(max_digits=5, decimal_places=2)
-    od_agudeza = models.DecimalField(max_digits=5, decimal_places=2)
-    # Ojo Izquierdo
-    oi_esfera = models.DecimalField(max_digits=5, decimal_places=2)
-    oi_cilindro = models.DecimalField(max_digits=5, decimal_places=2)
-    oi_eje = models.IntegerField()
-    oi_adicion = models.DecimalField(max_digits=5, decimal_places=2)
-    oi_agudeza = models.DecimalField(max_digits=5, decimal_places=2)
-    # Campos diagnósticos
-    queratometria = models.TextField(blank=True)
-    biomicroscopio = models.TextField(blank=True)
-    tanometria = models.TextField(blank=True)
+    consulta = models.OneToOneField(Consulta, on_delete=models.CASCADE, related_name='graduacion')
+    
+    # Ojo Derecho (OD)
+    od_esfera = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    od_cilindro = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    od_eje = models.IntegerField(default=0)
+    od_adicion = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    od_agudeza = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    
+    # Ojo Izquierdo (OI)
+    oi_esfera = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    oi_cilindro = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    oi_eje = models.IntegerField(default=0)
+    oi_adicion = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    oi_agudeza = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    
+    # Pruebas de Gabinete
+    queratometria = models.CharField(max_length=255, blank=True)
+    biomicroscopio = models.TextField(blank=True) # Uso TextField por si el óptico necesita explayarse
+    tanometria = models.CharField(max_length=255, blank=True) # Mantengo tu nombre "tanometria"
 
     def __str__(self):
-        return f"Graduación de {self.consulta.cliente.nombre}"
+        return f"Graduación técnica - {self.consulta.cliente.nombre}"
 
 # 6. FABRICANTE
 class Fabricante(models.Model):
