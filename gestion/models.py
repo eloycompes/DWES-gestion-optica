@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, User
+from django.conf import settings
 
 # 1. USUARIOS CON ROLES
 class Usuario(AbstractUser):
@@ -78,10 +79,15 @@ class Graduacion(models.Model):
     oi_adicion = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
     oi_agudeza = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
     
-    # Pruebas de Gabinete
-    queratometria = models.CharField(max_length=255, blank=True)
-    biomicroscopio = models.TextField(blank=True) # Uso TextField por si el óptico necesita explayarse
-    tanometria = models.CharField(max_length=255, blank=True) # Mantengo tu nombre "tanometria"
+    # Queratometría desglosada
+    od_queratometria = models.CharField(max_length=100, blank=True, verbose_name="Queratometría OD")
+    oi_queratometria = models.CharField(max_length=100, blank=True, verbose_name="Queratometría OI")
+    
+    # Tonometría desglosada (Presión intraocular)
+    od_tonometria = models.IntegerField(null=True, blank=True, verbose_name="Tonometría OD")
+    oi_tonometria = models.IntegerField(null=True, blank=True, verbose_name="Tonometría OI")
+
+    biomicroscopio = models.TextField(blank=True)
 
     def __str__(self):
         return f"Graduación técnica - {self.consulta.cliente.nombre}"
@@ -94,33 +100,60 @@ class Fabricante(models.Model):
     def __str__(self):
         return self.nombre
 
-# 7. PRODUCTO
+# 7. PRODUCTO (Ajustado con Fabricante)
+class Categoria(models.Model):
+    nombre = models.CharField(max_length=50, unique=True)
+    
+    def __str__(self):
+        return self.nombre
+
 class Producto(models.Model):
-    CATEGORIAS = (
-        ('Montura', 'Montura'),
-        ('Lente', 'Lente'),
-        ('Accesorio', 'Accesorio'),
-        ('Contactología', 'Contactología'),
-    )
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código/SKU") # Campo para búsqueda rápida
     nombre = models.CharField(max_length=100)
-    categoria = models.CharField(max_length=50, choices=CATEGORIAS)
-    subcategoria = models.CharField(max_length=50, help_text="Ej: Monofocal, Hidrogel, Pasta...")
+    categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT, verbose_name="Categoría")
+    fabricante = models.ForeignKey(Fabricante, on_delete=models.CASCADE) # <-- Relación restaurada
+    subcategoria = models.CharField(max_length=100, blank=True)
     precio = models.DecimalField(max_digits=10, decimal_places=2)
-    stock = models.IntegerField()
-    fabricante = models.ForeignKey(Fabricante, on_delete=models.CASCADE)
+    stock = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.nombre} - {self.fabricante.nombre} ({self.categoria})"
+        return f"[{self.codigo}] {self.nombre}"
 
-# 8. PEDIDO
+# 8. PEDIDO Y DETALLES
 class Pedido(models.Model):
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    optico = models.ForeignKey(Usuario, on_delete=models.PROTECT, related_name='pedidos_validados', limit_choices_to={'rol': 'Optico'})
-    comercial = models.ForeignKey(Usuario, on_delete=models.PROTECT, related_name='pedidos_vendidos', limit_choices_to={'rol': 'Comercial'})
-    fecha = models.DateField(auto_now_add=True)
-    total_importe = models.DecimalField(max_digits=10, decimal_places=2)
-    metodo_pago = models.CharField(max_length=50)
-    productos = models.ManyToManyField(Producto)
+    METODOS_PAGO = [
+        ('EFECTIVO', 'Efectivo'),
+        ('TARJETA', 'Tarjeta'),
+        ('TRANSFERENCIA', 'Transferencia'),
+    ]
+
+    cliente = models.ForeignKey('Cliente', on_delete=models.SET_NULL, null=True, blank=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+    total_importe = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, default='TARJETA')
+    
+    # Simplificamos a un solo responsable para ventas rápidas
+    vendedor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        related_name='ventas_realizadas',
+        verbose_name="Vendedor/Responsable"
+    )
+
+    # Usamos settings.AUTH_USER_MODEL para evitar el error E301
+    optico = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True, related_name='pedidos_optico')
+    comercial = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True, related_name='pedidos_comercial')
 
     def __str__(self):
-        return f"Pedido #{self.id} - {self.cliente.nombre}"
+        return f"Ticket {self.id} - {self.fecha.strftime('%d/%m/%Y')}"
+
+class DetallePedido(models.Model):
+    pedido = models.ForeignKey(Pedido, related_name='detalles', on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
+    cantidad = models.IntegerField(default=1)
+    # Guardamos el precio del momento de la venta por si el producto sube de precio mañana
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.cantidad} x {self.producto.nombre}"

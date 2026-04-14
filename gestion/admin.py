@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Usuario, Cliente, Cita, Consulta, Graduacion, Fabricante, Producto, Pedido
+from .models import Categoria, DetallePedido, Usuario, Cliente, Cita, Consulta, Graduacion, Fabricante, Producto, Pedido
 
 # Personalización del modelo de Usuario para que se vea el Rol en el Admin
 class CustomUserAdmin(UserAdmin):
@@ -40,7 +40,22 @@ class CitaAdmin(admin.ModelAdmin):
 class ProductoAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'categoria', 'fabricante', 'precio', 'stock')
     list_filter = ('categoria', 'fabricante')
-    search_fields = ('nombre',)
+    search_fields = ('nombre', 'fabricante__nombre')
 
-admin.site.register(Fabricante)
-admin.site.register(Pedido)
+admin.site.register(Categoria)
+
+@admin.register(Fabricante)
+class FabricanteAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'contacto')
+
+@admin.register(Pedido)
+class PedidoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'fecha', 'cliente', 'total_importe', 'metodo_pago')
+    list_filter = ('fecha', 'metodo_pago')
+
+    # Esto permite ver las líneas de productos dentro del pedido en el admin
+class DetallePedidoInline(admin.TabularInline):
+    model = DetallePedido
+    extra = 0
+
+admin.site.register(DetallePedido)

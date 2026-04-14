@@ -3,86 +3,68 @@
 {% block content %}
 <div class="container mt-4">
     <div class="card shadow">
-        <div class="card-header bg-dark text-white">
-            <h4 class="mb-0">Examen Gabinete: {{ consulta.cliente.nombre }} {{ consulta.cliente.apellidos }}</h4>
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Gabinete: Graduación y Pruebas Técnicas</h4>
         </div>
         <div class="card-body">
-            <form method="POST">
+            <form method="post">
                 {% csrf_token %}
 
-                <div class="row text-center mb-3">
-                    <div class="col-md-6"><h5 class="text-primary border-bottom pb-2">Ojo Derecho (OD)</h5></div>
-                    <div class="col-md-6"><h5 class="text-success border-bottom pb-2">Ojo Izquierdo (OI)</h5></div>
+                <div class="row text-center fw-bold small mb-2 d-none d-md-flex">
+                    <div class="col-md-1">Ojo</div>
+                    <div class="col-md-1">Esfera</div>
+                    <div class="col-md-1">Cilindro</div>
+                    <div class="col-md-1">Eje</div>
+                    <div class="col-md-1">Adición</div>
+                    <div class="col-md-1">AV</div>
+                    <div class="col-md-3">Queratometría</div>
+                    <div class="col-md-2">PIO (Tono)</div>
                 </div>
 
-                <div class="row g-3">
-                    <div class="col-md-6 border-end">
-                        <label class="form-label font-weight-bold">Esfera</label>
-                        {{ form.od_esfera }}
+                <div class="row g-2 mb-3 align-items-center">
+                    <div class="col-md-1 text-center"><span class="badge bg-info w-100 py-2">OD</span></div>
+                    <div class="col-md-1">{{ form.od_esfera }}</div>
+                    <div class="col-md-1">{{ form.od_cilindro }}</div>
+                    <div class="col-md-1">{{ form.od_eje }}</div>
+                    <div class="col-md-1">{{ form.od_adicion }}</div>
+                    <div class="col-md-1">{{ form.od_agudeza }}</div>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            {{ form.od_q1 }}
+                            <span class="input-group-text bg-light text-muted fw-bold">x</span>
+                            {{ form.od_q2 }}
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label font-weight-bold">Esfera</label>
-                        {{ form.oi_esfera }}
-                    </div>
-
-                    <div class="col-md-6 border-end">
-                        <label class="form-label">Cilindro</label>
-                        {{ form.od_cilindro }}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Cilindro</label>
-                        {{ form.oi_cilindro }}
-                    </div>
-
-                    <div class="col-md-6 border-end">
-                        <label class="form-label">Eje (°)</label>
-                        {{ form.od_eje }}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Eje (°)</label>
-                        {{ form.oi_eje }}
-                    </div>
-
-                    <div class="col-md-6 border-end">
-                        <label class="form-label">Agudeza Visual (AV)</label>
-                        {{ form.od_agudeza }}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Agudeza Visual (AV)</label>
-                        {{ form.oi_agudeza }}
-                    </div>
-
-                    <div class="col-md-6 border-end">
-                        <label class="form-label">Adición</label>
-                        {{ form.od_adicion }}
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Adición</label>
-                        {{ form.oi_adicion }}
-                    </div>
+                    <div class="col-md-2">{{ form.od_tonometria }}</div>
                 </div>
 
-                <hr class="my-4">
-
-                <h5 class="mb-3 text-secondary">Otras Pruebas de Gabinete</h5>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Queratometría</label>
-                        {{ form.queratometria }}
+                <div class="row g-2 mb-4 align-items-center">
+                    <div class="col-md-1 text-center"><span class="badge bg-success w-100 py-2">OI</span></div>
+                    <div class="col-md-1">{{ form.oi_esfera }}</div>
+                    <div class="col-md-1">{{ form.oi_cilindro }}</div>
+                    <div class="col-md-1">{{ form.oi_eje }}</div>
+                    <div class="col-md-1">{{ form.oi_adicion }}</div>
+                    <div class="col-md-1">{{ form.oi_agudeza }}</div>
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            {{ form.oi_q1 }}
+                            <span class="input-group-text bg-light text-muted fw-bold">x</span>
+                            {{ form.oi_q2 }}
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Tonometría (PIO)</label>
-                        {{ form.tanometria }}
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label">Biomicroscopía (Lámpara de hendidura)</label>
-                        {{ form.biomicroscopio }}
-                    </div>
+                    <div class="col-md-2">{{ form.oi_tonometria }}</div>
                 </div>
 
-                <div class="mt-4 d-flex justify-content-end">
-                    <a href="{% url 'detalle_cliente' consulta.cliente.id %}" class="btn btn-outline-secondary me-2">Cancelar</a>
-                    <button type="submit" class="btn btn-success px-5">Guardar Graduación</button>
+                <hr>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold"><i class="fas fa-microscope me-1"></i> Biomicroscopía / Observaciones:</label>
+                    {{ form.biomicroscopio }}
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'detalle_cliente' consulta.cliente.id %}" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary px-5">Guardar y Finalizar</button>
                 </div>
             </form>
         </div>

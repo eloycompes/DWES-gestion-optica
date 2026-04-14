@@ -13,4 +13,7 @@ urlpatterns = [
     
     # Pedidos
     path('pedidos/', views.lista_pedidos, name='lista_pedidos'),
+
+    # Venta rápida
+    path('venta-rapida/', views.venta_rapida, name='venta_rapida'),
 ]

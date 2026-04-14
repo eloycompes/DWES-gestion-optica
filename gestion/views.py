@@ -1,7 +1,12 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import GraduacionForm, ConsultaForm
-from .models import Consulta, Cliente, Graduacion
+from django.contrib import messages  # <--- Este es el IMPORT CORRECTO
 from django.db.models import Q
+from django.db import transaction
+
+# Tus modelos y formularios
+from .forms import GraduacionForm, ConsultaForm, VentaRapidaForm
+from .models import Consulta, Cliente, DetallePedido, Graduacion, Producto, Pedido
 
 def lista_clientes(request):
     query = request.GET.get('q', '')
@@ -21,14 +26,28 @@ def lista_clientes(request):
     })
 
 def detalle_cliente(request, cliente_id):
-
-    cliente = Cliente.objects.get(id=cliente_id)
-    return render(request, 'gestion/detalle_cliente.html', {'cliente': cliente})
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+    # Traemos los pedidos de este cliente, del más reciente al más antiguo
+    pedidos = Pedido.objects.filter(cliente=cliente).order_by('-fecha')
+    
+    return render(request, 'gestion/detalle_cliente.html', {
+        'cliente': cliente,
+        'pedidos': pedidos  # <--- Enviamos los pedidos a la web
+    })
 
 def detalle_consulta(request, consulta_id):
-    # Por ahora solo devolvemos un texto simple para que no de error
-    from django.http import HttpResponse
-    return HttpResponse(f"Aquí se verá la consulta con ID {consulta_id}")
+    # Obtenemos la consulta
+    consulta = get_object_or_404(Consulta, id=consulta_id)
+    # Intentamos obtener la graduación vinculada (si existe)
+    try:
+        graduacion = consulta.graduacion
+    except Graduacion.DoesNotExist:
+        graduacion = None
+        
+    return render(request, 'gestion/detalle_consulta.html', {
+        'consulta': consulta,
+        'graduacion': graduacion
+    })
 
 def lista_pedidos(request):
     # Por ahora solo devolvemos un texto simple
@@ -37,18 +56,15 @@ def lista_pedidos(request):
 
 def registrar_graduacion(request, consulta_id):
     consulta = get_object_or_404(Consulta, id=consulta_id)
-    
-    # Intentamos obtener la graduación si ya existe
-    try:
-        graduacion_instancia = consulta.graduacion
-    except Graduacion.DoesNotExist:
-        graduacion_instancia = None
+    graduacion_instancia = getattr(consulta, 'graduacion', None)
 
     if request.method == 'POST':
-        # Si existe, le pasamos la 'instance' para que Django haga un UPDATE y no un INSERT
         form = GraduacionForm(request.POST, instance=graduacion_instancia)
         if form.is_valid():
             graduacion = form.save(commit=False)
+            # Unimos los campos aquí antes de guardar
+            graduacion.od_queratometria = f"{form.cleaned_data['od_q1']} x {form.cleaned_data['od_q2']}"
+            graduacion.oi_queratometria = f"{form.cleaned_data['oi_q1']} x {form.cleaned_data['oi_q2']}"
             graduacion.consulta = consulta
             graduacion.save()
             return redirect('detalle_cliente', cliente_id=consulta.cliente.id)
@@ -79,3 +95,65 @@ def crear_consulta(request, cliente_id):
         form = ConsultaForm()
     
     return render(request, 'gestion/form_consulta.html', {'form': form, 'cliente': cliente})
+
+def venta_rapida(request):
+    productos = Producto.objects.all()
+    
+    if request.method == 'POST':
+        form = VentaRapidaForm(request.POST)
+        # Recogemos los datos ocultos que creó el JavaScript
+        productos_ids = request.POST.getlist('prod_id_real[]')
+        cantidades = request.POST.getlist('cant[]')
+
+        if form.is_valid():
+            if not productos_ids:
+                messages.error(request, "No has añadido ningún producto al carrito.")
+            else:
+                try:
+                    with transaction.atomic():
+                        # 1. Creamos la cabecera del Pedido
+                        pedido = form.save(commit=False)
+                        pedido.total_importe = 0  # Se calculará ahora
+                        pedido.save()
+
+                        total_acumulado = 0
+
+                        # 2. Creamos cada línea de detalle
+                        for p_id, cantidad in zip(productos_ids, cantidades):
+                            producto = Producto.objects.get(id=p_id)
+                            cant = int(cantidad)
+
+                            # Verificamos stock
+                            if producto.stock < cant:
+                                raise ValueError(f"Stock insuficiente para {producto.nombre}")
+
+                            # Crear línea de venta
+                            DetallePedido.objects.create(
+                                pedido=pedido,
+                                producto=producto,
+                                cantidad=cant,
+                                precio_unitario=producto.precio
+                            )
+
+                            # Actualizar stock del producto
+                            producto.stock -= cant
+                            producto.save()
+
+                            total_acumulado += (producto.precio * cant)
+
+                        # 3. Guardamos el total final en el pedido
+                        pedido.total_importe = total_acumulado
+                        pedido.save()
+
+                    messages.success(request, f"Venta {pedido.id} realizada con éxito. Total: {total_acumulado}€")
+                    return redirect('venta_rapida')
+
+                except Exception as e:
+                    messages.error(request, f"Error en la venta: {e}")
+    else:
+        form = VentaRapidaForm()
+
+    return render(request, 'gestion/venta_rapida.html', {
+        'form': form,
+        'productos': productos
+    })

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">⚡ Venta Rápida</h2>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" id="form-venta">
+        {% csrf_token %}
+        
+        <div class="card p-3 shadow-sm mb-4 bg-light">
+            <div class="row">
+                <div class="col-md-4">
+                    {{ form.vendedor.label_tag }}
+                    {{ form.vendedor }}
+                </div>
+                <div class="col-md-4">
+                    {{ form.cliente.label_tag }}
+                    {{ form.cliente }}
+                </div>
+                <div class="col-md-4">
+                    {{ form.metodo_pago.label_tag }}
+                    {{ form.metodo_pago }}
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-3 shadow-sm mb-4">
+            <label class="form-label"><strong>🔍 Escanear o Buscar Producto</strong></label>
+            <input list="lista-productos" id="buscador-principal" class="form-control form-control-lg" placeholder="Escribe código o nombre...">
+            
+            <datalist id="lista-productos">
+                {% for p in productos %}
+                <option value="{{ p.codigo }}" data-id="{{ p.id }}" data-nombre="{{ p.nombre }}" data-precio="{{ p.precio }}">
+                    {{ p.nombre }}
+                </option>
+                {% endfor %}
+            </datalist>
+        </div>
+
+        <div class="card p-3 shadow-sm">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Producto</th>
+                        <th style="width: 100px;">Cant.</th>
+                        <th>Precio</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="carrito-body">
+                    </tbody>
+            </table>
+
+            <div class="text-end mt-3">
+                <h4>Total: <span id="total-final">0.00</span> €</h4>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-lg w-100 mt-3">Finalizar y Cobrar</button>
+        </div>
+    </form>
+</div>
+
+
+<script>
+    const buscador = document.getElementById('buscador-principal');
+    const cuerpoTabla = document.getElementById('carrito-body');
+    const totalFinalLabel = document.getElementById('total-final');
+
+    // 1. Escuchar cuando el usuario escribe, escanea o CLICA una opción
+    buscador.addEventListener('input', function() {
+        const valorInput = this.value;
+        const datalist = document.getElementById('lista-productos');
+        
+        // Buscamos si lo que hay escrito coincide con alguna opción del datalist
+        // Buscamos tanto por el valor (código) como por el texto que ve el usuario
+        const opcion = Array.from(datalist.options).find(opt => 
+            opt.value === valorInput || opt.innerText === valorInput
+        );
+
+        if (opcion) {
+            agregarProductoAlCarrito(opcion);
+            this.value = ''; // Limpiar buscador
+            this.focus();    // Mantener el foco para el siguiente escaneo
+        }
+    });
+
+    // 2. Función para añadir la fila a la tabla
+    function agregarProductoAlCarrito(opcion) {
+        const id = opcion.dataset.id;
+        const nombre = opcion.dataset.nombre;
+        const precio = parseFloat(opcion.dataset.precio);
+        const codigo = opcion.value;
+
+        // ¿Ya existe este producto en la tabla?
+        let filaExistente = document.querySelector(`tr[data-id="${id}"]`);
+
+        if (filaExistente) {
+            // Si ya existe, solo sumamos 1 a la cantidad
+            const inputCant = filaExistente.querySelector('.input-cant');
+            inputCant.value = parseInt(inputCant.value) + 1;
+            actualizarSubtotal(inputCant);
+        } else {
+            // Si no existe, creamos la fila nueva
+            const fila = document.createElement('tr');
+            fila.setAttribute('data-id', id);
+            fila.innerHTML = `
+                <td>${codigo}</td>
+                <td>${nombre}</td>
+                <td>
+                    <input type="number" name="cant[]" class="form-control input-cant" 
+                           value="1" min="1" oninput="actualizarSubtotal(this)">
+                    <input type="hidden" name="prod_id_real[]" value="${id}">
+                </td>
+                <td>${precio.toFixed(2)} €</td>
+                <td class="subtotal-celda">${precio.toFixed(2)} €</td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">✕</button>
+                </td>
+            `;
+            cuerpoTabla.appendChild(fila);
+        }
+        actualizarTotalGlobal();
+    }
+
+    // 3. Funciones de cálculo
+    function actualizarSubtotal(input) {
+        const fila = input.closest('tr');
+        const id = fila.getAttribute('data-id');
+        const datalist = document.getElementById('lista-productos');
+        const opcion = Array.from(datalist.options).find(opt => opt.dataset.id === id);
+        
+        const precio = parseFloat(opcion.dataset.precio);
+        const cantidad = parseInt(input.value) || 0;
+        const subtotal = precio * cantidad;
+        
+        fila.querySelector('.subtotal-celda').innerText = subtotal.toFixed(2) + " €";
+        actualizarTotalGlobal();
+    }
+
+    function actualizarTotalGlobal() {
+        let total = 0;
+        document.querySelectorAll('.subtotal-celda').forEach(celda => {
+            total += parseFloat(celda.innerText.replace(' €', '')) || 0;
+        });
+        totalFinalLabel.innerText = total.toFixed(2);
+    }
+
+    function eliminarFila(boton) {
+        boton.closest('tr').remove();
+        actualizarTotalGlobal();
+    }
+</script>
+
+{% endblock %}
