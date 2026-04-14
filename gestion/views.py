@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.db import transaction
 
 # Tus modelos y formularios
-from .forms import GraduacionForm, ConsultaForm, VentaRapidaForm
+from .forms import EncargoForm, GraduacionForm, ConsultaForm, VentaRapidaForm
 from .models import Consulta, Cliente, DetallePedido, Graduacion, Producto, Pedido
 
 def lista_clientes(request):
@@ -96,6 +96,7 @@ def crear_consulta(request, cliente_id):
     
     return render(request, 'gestion/form_consulta.html', {'form': form, 'cliente': cliente})
 
+
 def venta_rapida(request):
     productos = Producto.objects.all()
     
@@ -156,4 +157,26 @@ def venta_rapida(request):
     return render(request, 'gestion/venta_rapida.html', {
         'form': form,
         'productos': productos
+    })
+
+
+def nuevo_encargo(request, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+    
+    if request.method == 'POST':
+        # Pasamos el cliente al formulario para la validación y el filtrado
+        form = EncargoForm(request.POST, cliente=cliente)
+        if form.is_valid():
+            encargo = form.save(commit=False)
+            encargo.cliente = cliente
+            encargo.save()
+            messages.success(request, f"Encargo creado correctamente para {cliente.nombre}")
+            return redirect('detalle_cliente', cliente_id=cliente.id)
+    else:
+        # Al cargar la página, pasamos el cliente para que el combo de graduaciones se filtre
+        form = EncargoForm(cliente=cliente)
+    
+    return render(request, 'gestion/nuevo_encargo.html', {
+        'form': form,
+        'cliente': cliente
     })

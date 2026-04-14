@@ -16,4 +16,7 @@ urlpatterns = [
 
     # Venta rápida
     path('venta-rapida/', views.venta_rapida, name='venta_rapida'),
+
+    # Encargo
+    path('cliente/<int:cliente_id>/nuevo-encargo/', views.nuevo_encargo, name='nuevo_encargo'),
 ]

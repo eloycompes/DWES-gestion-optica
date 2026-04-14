@@ -1,5 +1,6 @@
 from django import forms
-from .models import Graduacion, Pedido, Consulta, Producto
+from .models import Encargo, Graduacion, Pedido, Consulta, Producto, Usuario
+
 
 class GraduacionForm(forms.ModelForm):
     # Campos virtuales que veremos en el HTML
@@ -62,4 +63,50 @@ class VentaRapidaForm(forms.ModelForm):
             'cliente': forms.Select(attrs={'class': 'form-select'}),
             'metodo_pago': forms.Select(attrs={'class': 'form-select'}),
             'vendedor': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+
+class EncargoForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        cliente = kwargs.pop('cliente', None)
+        super().__init__(*args, **kwargs)
+        
+        if cliente:
+            self.fields['graduacion'].queryset = Graduacion.objects.filter(
+                consulta__cliente=cliente
+            ).order_by('-consulta__fecha')
+        
+        # CAMBIO AQUÍ: Usamos tu modelo Usuario
+        self.fields['vendedor'].queryset = Usuario.objects.all()
+        self.fields['vendedor'].empty_label = "Seleccione un vendedor"
+
+    class Meta:
+        model = Encargo
+        exclude = ['cliente', 'fecha_encargo', 'estado']
+        
+        widgets = {
+            # Montura
+            'montura_marca_modelo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Marca, modelo, calibre...'}),
+            'montura_en_stock': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            
+            # Común Cristales
+            'proveedor_lentes': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Essilor, Hoya...'}),
+            'material': forms.Select(attrs={'class': 'form-select', 'id': 'id_material'}),
+            
+            # Ojo Derecho (OD)
+            'od_tipo': forms.Select(attrs={'class': 'form-select', 'id': 'id_od_tipo'}),
+            'od_indice': forms.Select(attrs={'class': 'form-select', 'id': 'id_od_indice'}), # Widget de Select para los índices
+            'od_codigo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código interno'}),
+            'od_nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre comercial lente'}),
+            'od_precio': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+
+            # Ojo Izquierdo (OI)
+            'oi_tipo': forms.Select(attrs={'class': 'form-select', 'id': 'id_oi_tipo'}),
+            'oi_indice': forms.Select(attrs={'class': 'form-select', 'id': 'id_oi_indice'}), # Widget de Select para los índices
+            'oi_codigo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código interno'}),
+            'oi_nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre comercial lente'}),
+            'oi_precio': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+
+            'vendedor': forms.Select(attrs={'class': 'form-select'}),
+            'graduacion': forms.Select(attrs={'class': 'form-select'}),
         }

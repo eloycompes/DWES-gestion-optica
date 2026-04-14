@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fas fa-glasses me-2"></i>Nuevo Encargo para {{ cliente.nombre }}</h4>
+            <span class="badge bg-dark">Paso 1: Configuración de Lentes</span>
+        </div>
+        <div class="card-body">
+            <form method="post" id="encargoForm">
+                {% csrf_token %}
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="fw-bold">Vendedor:</label>
+                        {{ form.vendedor }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold">Graduación Aplicada:</label>
+                        {{ form.graduacion }}
+                    </div>
+                </div>
+
+                <div class="card bg-light mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title text-secondary">Montura</h5>
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                {{ form.montura_marca_modelo }}
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    {{ form.montura_en_stock }}
+                                    <label class="form-check-label">¿Está en stock?</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4 border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Configuración de Lentes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 mb-4 border-bottom pb-3">
+                            <div class="col-md-6">
+                                <label class="fw-bold">Proveedor:</label>
+                                {{ form.proveedor_lentes }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="fw-bold">Material Base:</label>
+                                {{ form.material }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-5">
+                                <h6 class="text-info border-bottom pb-2 text-center">OJO DERECHO (OD)</h6>
+                                <div class="mb-2">Tipo: {{ form.od_tipo }}</div>
+                                <div class="mb-2">Índice: {{ form.od_indice }}</div>
+                                <div class="mb-2">Código: {{ form.od_codigo }}</div>
+                                <div class="mb-2">Nombre Lente: {{ form.od_nombre }}</div>
+                                <div class="mb-2">Precio: {{ form.od_precio }}</div>
+                            </div>
+
+                            <div class="col-md-2 d-flex flex-column align-items-center justify-content-center">
+                                <button type="button" class="btn btn-outline-secondary mb-2" onclick="copiarODaOI()" title="Copiar datos a Ojo Izquierdo">
+                                    <i class="fas fa-copy d-block"></i>
+                                    <small>Copiar a OI</small>
+                                </button>
+                                <i class="fas fa-chevron-right d-none d-md-block text-muted"></i>
+                            </div>
+
+                            <div class="col-md-5">
+                                <h6 class="text-success border-bottom pb-2 text-center">OJO IZQUIERDO (OI)</h6>
+                                <div class="mb-2">Tipo: {{ form.oi_tipo }}</div>
+                                <div class="mb-2">Índice: {{ form.oi_indice }}</div>
+                                <div class="mb-2">Código: {{ form.oi_codigo }}</div>
+                                <div class="mb-2">Nombre Lente: {{ form.oi_nombre }}</div>
+                                <div class="mb-2">Precio: {{ form.oi_precio }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'detalle_cliente' cliente.id %}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-success btn-lg px-5">Crear Encargo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// 1. Lógica de índices dinámicos
+const indicesOrganicos = ['1.5', '1.6', '1.67', '1.74'];
+const indicesMinerales = ['1.5', '1.6', '1.7', '1.8', '1.9'];
+
+function actualizarIndices() {
+    const material = document.getElementById('id_material').value;
+    const targets = [document.getElementById('id_od_indice'), document.getElementById('id_oi_indice')];
+    const lista = material === 'ORG' ? indicesOrganicos : indicesMinerales;
+
+    targets.forEach(select => {
+        const valorActual = select.value;
+        select.innerHTML = '<option value="">---</option>';
+        lista.forEach(idx => {
+            const opt = document.createElement('option');
+            opt.value = idx;
+            opt.textContent = idx;
+            if (idx === valorActual) opt.selected = true;
+            select.appendChild(opt);
+        });
+    });
+}
+
+// 2. Lógica de copiar datos
+function copiarODaOI() {
+    const campos = ['tipo', 'indice', 'codigo', 'nombre', 'precio'];
+    campos.forEach(campo => {
+        document.getElementById(`id_oi_${campo}`).value = document.getElementById(`id_od_${campo}`).value;
+    });
+}
+
+// Inicializar al cargar y al cambiar material
+document.getElementById('id_material').addEventListener('change', actualizarIndices);
+window.onload = actualizarIndices;
+</script>
+{% endblock %}

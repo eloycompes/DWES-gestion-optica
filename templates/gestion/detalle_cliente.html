@@ -112,7 +112,7 @@
                         <a href="{% url 'venta_rapida' %}?cliente={{ cliente.id }}" class="btn btn-sm btn-light border-end">
                             <i class="fas fa-bolt me-1"></i> + Venta Rápida
                         </a>
-                        <a href="#" class="btn btn-sm btn-warning fw-bold text-dark">
+                        <a href="{% url 'nuevo_encargo' cliente.id %}" class="btn btn-sm btn-warning fw-bold text-dark">
                             <i class="fas fa-glasses me-1"></i> + Nuevo Encargo
                         </a>
                     </div>

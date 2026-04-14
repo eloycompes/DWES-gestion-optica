@@ -157,3 +157,57 @@ class DetallePedido(models.Model):
 
     def __str__(self):
         return f"{self.cantidad} x {self.producto.nombre}"
+    
+# 9. ENCARGO
+class Encargo(models.Model):
+    # Relaciones básicas
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='encargos')
+    graduacion = models.ForeignKey(Graduacion, on_delete=models.SET_NULL, null=True, verbose_name="Graduación vinculada")
+    
+    # Aquí la corrección del error:
+    vendedor = models.ForeignKey('Usuario', on_delete=models.SET_NULL, null=True)
+    
+    fecha_encargo = models.DateTimeField(auto_now_add=True)
+
+    # Montura
+    montura_marca_modelo = models.CharField(max_length=200, blank=True, verbose_name="Montura")
+    montura_en_stock = models.BooleanField(default=True, verbose_name="¿En stock?")
+    
+    # Común Cristales
+    proveedor_lentes = models.CharField(max_length=100)
+    MATERIAL_CHOICES = [('ORG', 'Orgánico'), ('MIN', 'Mineral')]
+    material = models.CharField(max_length=3, choices=MATERIAL_CHOICES, default='ORG')
+
+    # Lente Ojo Derecho (OD)
+    TIPO_LENTE_CHOICES = [('LEJ', 'Lejos'), ('CER', 'Cerca'), ('PRO', 'Progresivo'), ('OCU', 'Ocupacional')]
+    od_tipo = models.CharField(max_length=3, choices=TIPO_LENTE_CHOICES, blank=True, null=True)
+    od_indice = models.DecimalField(
+        max_digits=4, 
+        decimal_places=2, 
+        null=True, 
+        blank=True, 
+        verbose_name="Índice OD"
+    )
+    od_codigo = models.CharField(max_length=50, blank=True)
+    od_nombre = models.CharField(max_length=200, blank=True)
+    od_precio = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    # Lente Ojo Izquierdo (OI)
+    oi_tipo = models.CharField(max_length=3, choices=TIPO_LENTE_CHOICES, blank=True, null=True)
+    oi_indice = models.DecimalField(
+        max_digits=4, 
+        decimal_places=2, 
+        null=True, 
+        blank=True, 
+        verbose_name="Índice OI"
+    )
+    oi_codigo = models.CharField(max_length=50, blank=True)
+    oi_nombre = models.CharField(max_length=200, blank=True)
+    oi_precio = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    # Estado del pedido
+    ESTADO_CHOICES = [('PEN', 'Pendiente'), ('TAL', 'En Taller'), ('LIS', 'Listo'), ('ENT', 'Entregado')]
+    estado = models.CharField(max_length=3, choices=ESTADO_CHOICES, default='PEN')
+
+    def __str__(self):
+        return f"Encargo {self.id} - {self.cliente.nombre}"
