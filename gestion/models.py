@@ -90,7 +90,8 @@ class Graduacion(models.Model):
     biomicroscopio = models.TextField(blank=True)
 
     def __str__(self):
-        return f"Graduación técnica - {self.consulta.cliente.nombre}"
+        fecha = self.consulta.fecha.strftime('%d/%m/%Y')
+        return f"{fecha} - {self.consulta.cliente.nombre}"
 
 # 6. FABRICANTE
 class Fabricante(models.Model):
@@ -172,6 +173,7 @@ class Encargo(models.Model):
     # Montura
     montura_marca_modelo = models.CharField(max_length=200, blank=True, verbose_name="Montura")
     montura_en_stock = models.BooleanField(default=True, verbose_name="¿En stock?")
+    montura_precio = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     
     # Común Cristales
     proveedor_lentes = models.CharField(max_length=100)
@@ -205,9 +207,34 @@ class Encargo(models.Model):
     oi_nombre = models.CharField(max_length=200, blank=True)
     oi_precio = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
-    # Estado del pedido
-    ESTADO_CHOICES = [('PEN', 'Pendiente'), ('TAL', 'En Taller'), ('LIS', 'Listo'), ('ENT', 'Entregado')]
+    # Pago y Totales
+    total_encargo = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    pagado = models.BooleanField(default=False, verbose_name="¿Está pagado?")
+    METODO_PAGO_CHOICES = [
+        ('EFECTIVO', 'Efectivo'),
+        ('TARJETA', 'Tarjeta'),
+        ('TRANSFERENCIA', 'Transferencia'),
+    ]
+    metodo_pago = models.CharField(max_length=20, choices=METODO_PAGO_CHOICES, blank=True, null=True)
+
+    # Estado del flujo (Esto controlará si sale en 'Encargos' o en 'Historial')
+    ESTADO_CHOICES = [
+        ('PEN', 'Pendiente (Taller)'),
+        ('LIS', 'Listo para entrega'),
+        ('TAL', 'En taller'),
+        ('ENT', 'Entregado a cliente'), # Solo este estado lo mandará al historial final
+    ]
     estado = models.CharField(max_length=3, choices=ESTADO_CHOICES, default='PEN')
+
+    def calcular_total(self):
+        """Suma montura + lente OD + lente OI"""
+        total = self.montura_precio + self.od_precio + self.oi_precio
+        return total
+
+    def save(self, *args, **kwargs):
+        # Antes de guardar, calculamos el total automáticamente
+        self.total_encargo = self.calcular_total()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Encargo {self.id} - {self.cliente.nombre}"

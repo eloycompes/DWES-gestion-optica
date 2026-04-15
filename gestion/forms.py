@@ -67,6 +67,13 @@ class VentaRapidaForm(forms.ModelForm):
 
 
 class EncargoForm(forms.ModelForm):
+    # Cambiamos montura_marca_modelo por un buscador de la base de datos
+    montura = forms.ModelChoiceField(
+        queryset=Producto.objects.filter(categoria__nombre="Monturas"), # Filtra solo monturas
+        required=False,
+        label="Buscar Montura (Código o Nombre)",
+        widget=forms.Select(attrs={'class': 'form-control buscador-monturas'})
+    )
     def __init__(self, *args, **kwargs):
         cliente = kwargs.pop('cliente', None)
         super().__init__(*args, **kwargs)
@@ -82,12 +89,15 @@ class EncargoForm(forms.ModelForm):
 
     class Meta:
         model = Encargo
-        exclude = ['cliente', 'fecha_encargo', 'estado']
+        exclude = ['cliente', 'fecha_encargo', 'estado', 'total_encargo']
         
         widgets = {
             # Montura
             'montura_marca_modelo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Marca, modelo, calibre...'}),
             'montura_en_stock': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'montura_precio': forms.NumberInput(attrs={'class': 'form-control precio-input', 'step': '0.01'}),
+            'pagado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'metodo_pago': forms.Select(attrs={'class': 'form-select'}),
             
             # Común Cristales
             'proveedor_lentes': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Essilor, Hoya...'}),
@@ -107,6 +117,7 @@ class EncargoForm(forms.ModelForm):
             'oi_nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre comercial lente'}),
             'oi_precio': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
 
+            # Otros
             'vendedor': forms.Select(attrs={'class': 'form-select'}),
             'graduacion': forms.Select(attrs={'class': 'form-select'}),
         }

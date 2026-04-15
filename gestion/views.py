@@ -162,6 +162,8 @@ def venta_rapida(request):
 
 def nuevo_encargo(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
+    # Traemos todas las monturas para el buscador
+    monturas_db = Producto.objects.filter(categoria__nombre__iexact="Monturas")
     
     if request.method == 'POST':
         # Pasamos el cliente al formulario para la validación y el filtrado
@@ -178,5 +180,6 @@ def nuevo_encargo(request, cliente_id):
     
     return render(request, 'gestion/nuevo_encargo.html', {
         'form': form,
-        'cliente': cliente
+        'cliente': cliente,
+        'monturas_db': monturas_db # <--- Enviamos la lista
     })

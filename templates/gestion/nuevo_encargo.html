@@ -22,22 +22,59 @@
                     </div>
                 </div>
 
+                <!-- Montura con buscador dinámico -->
                 <div class="card bg-light mb-4">
                     <div class="card-body">
-                        <h5 class="card-title text-secondary">Montura</h5>
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                {{ form.montura_marca_modelo }}
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-check">
-                                    {{ form.montura_en_stock }}
-                                    <label class="form-check-label">¿Está en stock?</label>
+                        <h5 class="card-title text-secondary"><i class="fas fa-barcode me-2"></i>Selección de Montura</h5>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <input type="text" name="montura_marca_modelo" id="id_montura_marca_modelo" list="lista-monturas" class="form-control form-control-lg border-primary" placeholder="Escriba el SKU de la montura..." autocomplete="off">
+                                
+                                <datalist id="lista-monturas">
+                                    {% for m in monturas_db %}
+                                        <option value="{{ m.codigo }}" data-nombre="{{ m.nombre }}" data-stock="{{ m.stock }}" data-precio="{{ m.precio|stringformat:".2f" }}">
+                                            {{ m.nombre }}
+                                        </option>
+                                    {% endfor %}
+                                </datalist>
+
+                                <div id="confirmacion_montura" class="mt-2 p-3 border rounded d-none bg-white shadow-sm">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-5">
+                                            <span class="text-muted small d-block">Producto detectado:</span>
+                                            <strong id="display_nombre"></strong>
+                                        </div>
+                                        <div class="col-md-3 text-center">
+                                            <span class="text-muted small d-block">Stock actual:</span>
+                                            <span id="display_stock" class="badge"></span>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <span class="text-muted small d-block">Precio Montura:</span>
+                                            <div class="input-group">
+                                                <input type="number" name="montura_precio" id="id_montura_precio" class="form-control form-control-sm precio-input" step="0.01">
+                                                <span class="input-group-text">€</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="aviso_proveedor" class="alert alert-danger mt-3 py-2 px-3 d-none mb-0">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-exclamation-triangle me-2 fa-lg"></i>
+                                            <div>
+                                                <strong class="d-block">¡SIN STOCK EN TIENDA!</strong>
+                                                <span class="small">Es necesario realizar pedido al proveedor para este encargo.</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+
+                <!-- Fin sección montura -->
+
 
                 <div class="card mb-4 border-primary">
                     <div class="card-header bg-primary text-white">
@@ -85,6 +122,29 @@
                     </div>
                 </div>
 
+                <!-- PAGO -->
+                <div class="card border-dark mb-4 shadow">
+                    <div class="card-body bg-dark text-white p-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <label class="fw-bold mb-2">Método de Pago:</label>
+                                {{ form.metodo_pago }}
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input" type="checkbox" name="pagado" id="id_pagado" style="transform: scale(1.8); margin-right: 15px;">
+                                    <label class="form-check-label fw-bold h5 mb-0" for="id_pagado">DEJA PAGADO</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end border-start border-secondary">
+                                <h2 class="mb-0 text-warning">TOTAL: <span id="total_display">0.00</span>€</h2>
+                                <small class="text-muted">Incluye Montura + Lentes</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Fin sección pago -->
+
                 <div class="d-flex justify-content-between">
                     <a href="{% url 'detalle_cliente' cliente.id %}" class="btn btn-secondary">Cancelar</a>
                     <button type="submit" class="btn btn-success btn-lg px-5">Crear Encargo</button>
@@ -128,5 +188,71 @@ function copiarODaOI() {
 // Inicializar al cargar y al cambiar material
 document.getElementById('id_material').addEventListener('change', actualizarIndices);
 window.onload = actualizarIndices;
+
+// 1. Lógica al seleccionar el SKU
+document.getElementById('id_montura_marca_modelo').addEventListener('input', function(e) {
+    const inputVal = e.target.value;
+    const datalist = document.getElementById('lista-monturas');
+    const option = Array.from(datalist.options).find(opt => opt.value === inputVal);
+    
+    const panel = document.getElementById('confirmacion_montura');
+    const displayNombre = document.getElementById('display_nombre');
+    const displayStock = document.getElementById('display_stock');
+    const inputPrecioMontura = document.getElementById('id_montura_precio');
+    const avisoProveedor = document.getElementById('aviso_proveedor'); // Referencia al aviso
+
+    if (option) {
+        const nombre = option.getAttribute('data-nombre');
+        const stock = parseInt(option.getAttribute('data-stock')) || 0;
+        const precio = option.getAttribute('data-precio');
+
+        displayNombre.textContent = nombre;
+        displayStock.textContent = stock;
+        inputPrecioMontura.value = precio;
+
+        panel.classList.remove('d-none');
+
+        // LÓGICA DE AVISO DE STOCK
+        if (stock <= 0) {
+            displayStock.className = 'badge bg-danger';
+            avisoProveedor.classList.remove('d-none'); // Mostrar aviso rojo
+            panel.style.borderLeft = "5px solid #dc3545";
+        } else {
+            displayStock.className = 'badge bg-success';
+            avisoProveedor.classList.add('d-none'); // Ocultar aviso si hay stock
+            panel.style.borderLeft = "5px solid #198754";
+        }
+        
+        calcularTotalReal();
+    } else {
+        panel.classList.add('d-none');
+    }
+});
+
+// 2. Función de Suma Total (Infalible)
+function calcularTotalReal() {
+    // Buscamos los valores por su nombre en el formulario
+    const valMon = parseFloat(document.querySelector('input[name="montura_precio"]').value) || 0;
+    const valOD = parseFloat(document.querySelector('input[name="od_precio"]').value) || 0;
+    const valOI = parseFloat(document.querySelector('input[name="oi_precio"]').value) || 0;
+
+    const total = valMon + valOD + valOI;
+    
+    const display = document.getElementById('total_display');
+    if (display) {
+        display.textContent = total.toFixed(2);
+    }
+}
+
+// 3. Escuchar cambios manuales en cualquier precio
+document.addEventListener('input', function(e) {
+    if (e.target.name === 'montura_precio' || e.target.name === 'od_precio' || e.target.name === 'oi_precio') {
+        calcularTotalReal();
+    }
+});
+
+// Ejecutar al cargar
+window.onload = calcularTotalReal;
+
 </script>
 {% endblock %}
