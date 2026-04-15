@@ -128,7 +128,7 @@ class Pedido(models.Model):
         ('TRANSFERENCIA', 'Transferencia'),
     ]
 
-    cliente = models.ForeignKey('Cliente', on_delete=models.SET_NULL, null=True, blank=True)
+    cliente = models.ForeignKey('Cliente', on_delete=models.SET_NULL, null=True, blank=True, related_name='ventas_rapidas')
     fecha = models.DateTimeField(auto_now_add=True)
     total_importe = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, default='TARJETA')

@@ -46,48 +46,37 @@
         </div>
 
         <div class="col-md-8">
+            
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-                    <h5 class="card-title mb-0"><i class="fas fa-notes-medical me-2"></i>Historial de Consultas (Anamnesis)</h5>
+                    <h5 class="card-title mb-0"><i class="fas fa-notes-medical me-2"></i>Historial de Consultas</h5>
                     <a href="{% url 'crear_consulta' cliente.id %}" class="btn btn-sm btn-light text-dark fw-bold">
                         + Nueva Consulta
                     </a>
                 </div>
                 <div class="card-body p-0">
-                    {% if cliente.consultas.all %}
+                    {% if consultas %}
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light text-muted small">
                                 <tr>
                                     <th class="ps-3">Fecha</th>
                                     <th>Motivo / Observaciones</th>
-                                    <th class="text-end pe-3">Acciones Gabinete</th>
+                                    <th class="text-end pe-3">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for consulta in cliente.consultas.all %}
+                                {% for consulta in consultas %}
                                 <tr>
-                                    <td class="ps-3">
-                                        <span class="badge bg-secondary">{{ consulta.fecha|date:"d/m/Y" }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">{{ consulta.motivo|truncatechars:40 }}</div>
-                                    </td>
+                                    <td class="ps-3"><span class="badge bg-secondary">{{ consulta.fecha|date:"d/m/Y" }}</span></td>
+                                    <td><div class="fw-bold">{{ consulta.motivo|truncatechars:40 }}</div></td>
                                     <td class="text-end pe-3">
                                         <div class="btn-group shadow-sm">
-                                            <a href="{% url 'detalle_consulta' consulta.id %}" class="btn btn-sm btn-outline-info" title="Ver Anamnesis">
-                                                Ver
-                                            </a>
-                                            
-                                            {# Verificamos si la consulta ya tiene una graduación asociada #}
+                                            <a href="{% url 'detalle_consulta' consulta.id %}" class="btn btn-sm btn-outline-info">Ver</a>
                                             {% if not consulta.graduacion %}
-                                                <a href="{% url 'registrar_graduacion' consulta.id %}" class="btn btn-sm btn-primary">
-                                                    + Graduar
-                                                </a>
+                                                <a href="{% url 'registrar_graduacion' consulta.id %}" class="btn btn-sm btn-primary">+ Graduar</a>
                                             {% else %}
-                                                <a href="{% url 'registrar_graduacion' consulta.id %}" class="btn btn-sm btn-success text-white">
-                                                    Graduación <i class="fas fa-check-circle ms-1"></i>
-                                                </a>
+                                                <a href="{% url 'registrar_graduacion' consulta.id %}" class="btn btn-sm btn-success text-white">Graduación <i class="fas fa-check-circle"></i></a>
                                             {% endif %}
                                         </div>
                                     </td>
@@ -97,48 +86,60 @@
                         </table>
                     </div>
                     {% else %}
-                        <div class="p-4 text-center text-muted">
-                            <i class="fas fa-folder-open d-block mb-2 fa-2x"></i>
-                            Este cliente aún no tiene consultas registradas.
-                        </div>
+                        <div class="p-4 text-center text-muted">No hay consultas registradas.</div>
                     {% endif %}
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center py-3">
-                    <h5 class="card-title mb-0"><i class="fas fa-shopping-cart me-2"></i>Historial de Compras y Ventas</h5>
-                    <div class="btn-group">
-                        <a href="{% url 'venta_rapida' %}?cliente={{ cliente.id }}" class="btn btn-sm btn-light border-end">
-                            <i class="fas fa-bolt me-1"></i> + Venta Rápida
-                        </a>
-                        <a href="{% url 'nuevo_encargo' cliente.id %}" class="btn btn-sm btn-warning fw-bold text-dark">
-                            <i class="fas fa-glasses me-1"></i> + Nuevo Encargo
-                        </a>
-                    </div>
+            <div class="card shadow-sm border-0 mb-4 border-start border-warning border-5">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center py-3">
+                    <h5 class="card-title mb-0"><i class="fas fa-tools me-2"></i>Encargos en Proceso</h5>
+                    <a href="{% url 'nuevo_encargo' cliente.id %}" class="btn btn-sm btn-dark">+ Nuevo Encargo</a>
                 </div>
                 <div class="card-body p-0">
-                    {% if pedidos %}
+                    {% if encargos_activos %}
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover align-middle mb-0">
                             <thead class="table-light small">
                                 <tr>
-                                    <th class="ps-3">Ticket</th>
-                                    <th>Fecha</th>
+                                    <th class="ps-3">Fecha</th>
+                                    <th>Montura</th>
                                     <th>Total</th>
-                                    <th>Método</th>
+                                    <th>Estado Pago</th>
                                     <th class="text-end pe-3">Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for pedido in pedidos %}
+                                {% for encargo in encargos_activos %}
                                 <tr>
-                                    <td class="ps-3 fw-bold">#{{ pedido.id }}</td>
-                                    <td>{{ pedido.fecha|date:"d/m/Y H:i" }}</td>
-                                    <td>{{ pedido.total_importe }} €</td>
-                                    <td><span class="badge border text-dark">{{ pedido.metodo_pago }}</span></td>
+                                    <td class="ps-3 small">{{ encargo.fecha_encargo|date:"d/m/Y" }}</td>
+                                    <td><strong class="text-uppercase small">{{ encargo.montura_marca_modelo }}</strong></td>
+                                    <td class="fw-bold">{{ encargo.total_encargo }}€</td>
+                                    <td>
+                                        {% if encargo.pagado %}
+                                            <span class="badge bg-success">PAGADO</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">PENDIENTE</span>
+                                        {% endif %}
+                                    </td>
                                     <td class="text-end pe-3">
-                                        <button class="btn btn-sm btn-outline-secondary">Ver Ticket</button>
+                                        <div class="btn-group shadow-sm">
+                                            <a href="{% url 'editar_encargo' encargo.id %}" class="btn btn-sm btn-outline-dark" title="Editar detalles">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </a>
+
+                                            {% if not encargo.pagado %}
+                                                <form method="post" action="{% url 'marcar_pagado' encargo.id %}" style="display:inline;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-primary">Cobrar</button>
+                                                </form>
+                                            {% else %}
+                                                <form method="post" action="{% url 'entregar_encargo' encargo.id %}" style="display:inline;">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-success">Entregar</button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -146,14 +147,57 @@
                         </table>
                     </div>
                     {% else %}
-                    <div class="p-4 text-center text-muted">
-                        <i class="fas fa-shopping-bag d-block mb-2 fa-2x"></i>
-                        Este cliente aún no ha realizado ninguna compra.
-                    </div>
+                        <div class="p-4 text-center text-muted small">No hay trabajos pendientes en taller.</div>
                     {% endif %}
                 </div>
             </div>
-        </div>
-    </div>
-</div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="card-title mb-0"><i class="fas fa-shopping-cart me-2"></i>Historial de Compras Finalizadas</h5>
+                    <a href="{% url 'venta_rapida' %}?cliente={{ cliente.id }}" class="btn btn-sm btn-light">+ Venta Rápida</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th class="ps-3">Tipo</th>
+                                    <th>Fecha</th>
+                                    <th>Total</th>
+                                    <th>Método Pago</th>
+                                    <th class="text-end pe-3">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for e in historial_encargos %}
+                                <tr>
+                                    <td class="ps-3"><span class="badge border text-info border-info">Encargo</span></td>
+                                    <td>{{ e.fecha_encargo|date:"d/m/Y" }}</td>
+                                    <td class="fw-bold">{{ e.total_encargo }}€</td>
+                                    <td>{{ e.metodo_pago }}</td>
+                                    <td class="text-end pe-3"><button class="btn btn-sm btn-outline-secondary">Ver</button></td>
+                                </tr>
+                                {% endfor %}
+
+                                {% for v in ventas_rapidas %}
+                                <tr>
+                                    <td class="ps-3"><span class="badge border text-dark border-dark">Venta Rápida</span></td>
+                                    <td>{{ v.fecha|date:"d/m/Y" }}</td>
+                                    <td class="fw-bold">{{ v.total_importe }}€</td>
+                                    <td>{{ v.metodo_pago }}</td>
+                                    <td class="text-end pe-3"><button class="btn btn-sm btn-outline-secondary">Ticket</button></td>
+                                </tr>
+                                {% endfor %}
+
+                                {% if not historial_encargos and not ventas_rapidas %}
+                                    <tr><td colspan="5" class="text-center p-4 text-muted">No hay ventas finalizadas.</td></tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div> </div> </div>
 {% endblock %}

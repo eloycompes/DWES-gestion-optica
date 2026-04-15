@@ -6,7 +6,7 @@ from django.db import transaction
 
 # Tus modelos y formularios
 from .forms import EncargoForm, GraduacionForm, ConsultaForm, VentaRapidaForm
-from .models import Consulta, Cliente, DetallePedido, Graduacion, Producto, Pedido
+from .models import Consulta, Cliente, DetallePedido, Encargo, Graduacion, Producto, Pedido
 
 def lista_clientes(request):
     query = request.GET.get('q', '')
@@ -27,12 +27,13 @@ def lista_clientes(request):
 
 def detalle_cliente(request, cliente_id):
     cliente = get_object_or_404(Cliente, id=cliente_id)
-    # Traemos los pedidos de este cliente, del más reciente al más antiguo
-    pedidos = Pedido.objects.filter(cliente=cliente).order_by('-fecha')
     
     return render(request, 'gestion/detalle_cliente.html', {
         'cliente': cliente,
-        'pedidos': pedidos  # <--- Enviamos los pedidos a la web
+        'consultas': cliente.consultas.all().order_by('-fecha'),
+        'encargos_activos': cliente.encargos.exclude(estado='ENT').order_by('-id'),
+        'historial_encargos': cliente.encargos.filter(estado='ENT').order_by('-id'),
+        'ventas_rapidas': cliente.ventas_rapidas.all().order_by('-fecha'), # ¡Mucho más claro!
     })
 
 def detalle_consulta(request, consulta_id):
@@ -183,3 +184,36 @@ def nuevo_encargo(request, cliente_id):
         'cliente': cliente,
         'monturas_db': monturas_db # <--- Enviamos la lista
     })
+
+def editar_encargo(request, encargo_id):
+    encargo = get_object_or_404(Encargo, id=encargo_id)
+    # Guardamos el ID del cliente para volver a su expediente luego
+    cliente_id = encargo.cliente.id 
+    
+    if request.method == 'POST':
+        form = EncargoForm(request.POST, instance=encargo)
+        if form.is_valid():
+            form.save()
+            return redirect('detalle_cliente', cliente_id=cliente_id)
+    else:
+        form = EncargoForm(instance=encargo)
+    
+    return render(request, 'gestion/nuevo_encargo.html', { # Reutilizamos el template de creación
+        'form': form,
+        'cliente': encargo.cliente,
+        'editando': True
+    })
+
+def marcar_pagado(request, encargo_id):
+    encargo = get_object_or_404(Encargo, id=encargo_id)
+    encargo.pagado = True
+    encargo.save()
+    # Redirigimos al expediente del cliente al que pertenece el encargo
+    return redirect('detalle_cliente', cliente_id=encargo.cliente.id)
+
+def entregar_encargo(request, encargo_id):
+    encargo = get_object_or_404(Encargo, id=encargo_id)
+    if encargo.pagado:
+        encargo.estado = 'ENT'  # 'ENT' de Entregado
+        encargo.save()
+    return redirect('detalle_cliente', cliente_id=encargo.cliente.id)
