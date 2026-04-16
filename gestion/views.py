@@ -72,7 +72,7 @@ def detalle_cliente(request, cliente_id):
         'consultas': cliente.consultas.all().order_by('-fecha'),
         'encargos_activos': cliente.encargos.exclude(estado='ENT').order_by('-id'),
         'historial_encargos': cliente.encargos.filter(estado='ENT').order_by('-id'),
-        'ventas_rapidas': cliente.ventas_rapidas.all().order_by('-fecha'), # ¡Mucho más claro!
+        'ventas_rapidas': cliente.ventas_rapidas.all().order_by('-fecha'),
     })
 
 
