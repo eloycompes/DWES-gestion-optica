@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow-lg border-0">
+                <div class="card-header {% if editando %}bg-dark{% else %}bg-primary{% endif %} text-white py-3">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-user-edit me-2"></i>
+                        {% if editando %}Actualizar Datos del Cliente{% else %}Registrar Nuevo Cliente{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">DNI / NIE</label>
+                                {{ form.dni }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Teléfono de contacto</label>
+                                {{ form.telefono }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Nombre</label>
+                                {{ form.nombre }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Apellidos</label>
+                                {{ form.apellidos }}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Fecha de Nacimiento</label>
+                                {{ form.fecha_nacimiento }}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% if editando %}{% url 'detalle_cliente' form.instance.id %}{% else %}{% url 'lista_clientes' %}{% endif %}" class="btn btn-light border">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn {% if editando %}btn-dark{% else %}btn-primary{% endif %} px-5 shadow">
+                                {% if editando %}Guardar Cambios{% else %}Crear Cliente{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

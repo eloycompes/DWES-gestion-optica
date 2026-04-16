@@ -1,6 +1,18 @@
 from django import forms
-from .models import Encargo, Graduacion, Pedido, Consulta, Producto, Usuario
+from .models import Cliente, Encargo, Graduacion, Pedido, Consulta, Producto, Usuario
 
+
+class ClienteForm(forms.ModelForm):
+    class Meta:
+        model = Cliente
+        fields = ['dni', 'nombre', 'apellidos', 'telefono', 'fecha_nacimiento']
+        widgets = {
+            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'dni': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '12345678X'}),
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'apellidos': forms.TextInput(attrs={'class': 'form-control'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+        }
 
 class GraduacionForm(forms.ModelForm):
     # Campos virtuales que veremos en el HTML

@@ -5,8 +5,37 @@ from django.db.models import Q
 from django.db import transaction
 
 # Tus modelos y formularios
-from .forms import EncargoForm, GraduacionForm, ConsultaForm, VentaRapidaForm
+from .forms import ClienteForm, EncargoForm, GraduacionForm, ConsultaForm, VentaRapidaForm
 from .models import Consulta, Cliente, DetallePedido, Encargo, Graduacion, Producto, Pedido
+
+def crear_cliente(request):
+    if request.method == 'POST':
+        form = ClienteForm(request.POST)
+        if form.is_valid():
+            cliente = form.save()
+            return redirect('detalle_cliente', cliente_id=cliente.id)
+    else:
+        form = ClienteForm()
+    return render(request, 'gestion/form_cliente.html', {'form': form, 'editando': False})
+
+def editar_cliente(request, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+    if request.method == 'POST':
+        form = ClienteForm(request.POST, instance=cliente)
+        if form.is_valid():
+            form.save()
+            return redirect('detalle_cliente', cliente_id=cliente.id)
+    else:
+        form = ClienteForm(instance=cliente)
+    return render(request, 'gestion/form_cliente.html', {'form': form, 'editando': True})
+
+def eliminar_cliente(request, cliente_id):
+    """Vista para borrar un cliente"""
+    if request.method == 'POST':
+        cliente = get_object_or_404(Cliente, id=cliente_id)
+        cliente.delete()
+        return redirect('lista_clientes')
+    return redirect('detalle_cliente', cliente_id=cliente_id)
 
 def lista_clientes(request):
     query = request.GET.get('q', '')
@@ -35,6 +64,8 @@ def detalle_cliente(request, cliente_id):
         'historial_encargos': cliente.encargos.filter(estado='ENT').order_by('-id'),
         'ventas_rapidas': cliente.ventas_rapidas.all().order_by('-fecha'), # ¡Mucho más claro!
     })
+
+
 
 def detalle_consulta(request, consulta_id):
     # Obtenemos la consulta
