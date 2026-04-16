@@ -22,4 +22,5 @@ urlpatterns = [
     path('encargo/<int:encargo_id>/pagar/', views.marcar_pagado, name='marcar_pagado'),
     path('encargo/<int:encargo_id>/entregar/', views.entregar_encargo, name='entregar_encargo'),
     path('encargo/<int:encargo_id>/editar/', views.editar_encargo, name='editar_encargo'),
+    path('encargo/eliminar/<int:encargo_id>/', views.eliminar_encargo, name='eliminar_encargo'),
 ]

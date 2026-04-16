@@ -215,8 +215,41 @@ def marcar_pagado(request, encargo_id):
     return redirect('detalle_cliente', cliente_id=encargo.cliente.id)
 
 def entregar_encargo(request, encargo_id):
-    encargo = get_object_or_404(Encargo, id=encargo_id)
-    if encargo.pagado:
-        encargo.estado = 'ENT'  # 'ENT' de Entregado
+    if request.method == 'POST':
+        encargo = get_object_or_404(Encargo, id=encargo_id)
+        
+        # 1. Intentamos buscar la montura en la tabla de Productos
+        # Buscamos por el nombre/modelo que guardamos en el encargo
+        producto = Producto.objects.filter(nombre=encargo.montura_marca_modelo).first()
+        
+        if producto:
+            if producto.stock > 0:
+                producto.stock -= 1  # RESTAMOS EL STOCK AQUÍ
+                producto.save()
+            else:
+                messages.warning(request, f"Ojo: La montura {producto.nombre} no tiene stock, pero se ha marcado como entregada.")
+        
+        # 2. Cambiamos el estado (si tienes un campo estado, ajústalo)
+        encargo.estado = 'ENTREGADO' 
         encargo.save()
-    return redirect('detalle_cliente', cliente_id=encargo.cliente.id)
+        
+        return redirect('detalle_cliente', cliente_id=encargo.cliente.id)
+    
+    return redirect('lista_clientes')
+
+def eliminar_encargo(request, encargo_id):
+    if request.method == 'POST':
+        encargo = get_object_or_404(Encargo, id=encargo_id)
+        
+        # SEGURIDAD: Si está pagado, prohibimos borrar desde aquí
+        if encargo.pagado:
+            # Opcional: puedes mandar un mensaje de error
+            from django.contrib import messages
+            messages.error(request, "No se puede eliminar un encargo que ya ha sido pagado.")
+            return redirect('detalle_cliente', cliente_id=encargo.cliente.id)
+            
+        cliente_id = encargo.cliente.id
+        encargo.delete()
+        return redirect('detalle_cliente', cliente_id=cliente_id)
+    
+    return redirect('lista_clientes')

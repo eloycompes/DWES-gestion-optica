@@ -129,15 +129,29 @@
                                             </a>
 
                                             {% if not encargo.pagado %}
-                                                <form method="post" action="{% url 'marcar_pagado' encargo.id %}" style="display:inline;">
+                                                <form method="post" action="{% url 'marcar_pagado' encargo.id %}" style="display:inline;" 
+                                                    onsubmit="return confirm('¿Confirmas que el cliente ha pagado el total de este encargo?');">
                                                     {% csrf_token %}
                                                     <button type="submit" class="btn btn-sm btn-primary">Cobrar</button>
                                                 </form>
+
+                                                <form method="post" action="{% url 'eliminar_encargo' encargo.id %}" style="display:inline;"
+                                                    onsubmit="return confirm('¿ESTÁS SEGURO? Esta acción eliminará el encargo permanentemente.');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                                        <i class="fas fa-trash"></i>Eliminar
+                                                    </button>
+                                                </form>
                                             {% else %}
-                                                <form method="post" action="{% url 'entregar_encargo' encargo.id %}" style="display:inline;">
+                                                <form method="post" action="{% url 'entregar_encargo' encargo.id %}" style="display:inline;"
+                                                    onsubmit="return confirm('¿Confirmas la entrega al cliente? Se actualizará el historial y stock.');">
                                                     {% csrf_token %}
                                                     <button type="submit" class="btn btn-sm btn-success">Entregar</button>
                                                 </form>
+                                                
+                                                <span class="btn btn-sm btn-light disabled" title="Protegido: Ya pagado">
+                                                    <i class="fas fa-lock text-muted"></i>
+                                                </span>
                                             {% endif %}
                                         </div>
                                     </td>
