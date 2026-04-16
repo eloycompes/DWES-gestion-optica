@@ -1,5 +1,5 @@
 from django import forms
-from .models import Cliente, Encargo, Graduacion, Pedido, Consulta, Producto, Usuario
+from .models import Cita, Cliente, Encargo, Graduacion, Pedido, Consulta, Producto, Usuario
 
 
 class ClienteForm(forms.ModelForm):
@@ -159,3 +159,25 @@ class EncargoForm(forms.ModelForm):
             'vendedor': forms.Select(attrs={'class': 'form-select'}),
             'graduacion': forms.Select(attrs={'class': 'form-select'}),
         }
+
+class CitaForm(forms.ModelForm):
+    class Meta:
+        model = Cita
+        fields = ['cliente', 'optico', 'fecha_hora', 'motivo_cita', 'estado']
+        widgets = {
+            # 'datetime-local' permite elegir día y hora en un solo selector
+            'fecha_hora': forms.DateTimeInput(
+                attrs={'type': 'datetime-local', 'class': 'form-control'},
+                format='%Y-%m-%dT%H:%M'
+            ),
+            'cliente': forms.Select(attrs={'class': 'form-select'}),
+            'optico': forms.Select(attrs={'class': 'form-select'}),
+            'motivo_cita': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Revisión anual'}),
+            'estado': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Si venimos desde la ficha de un cliente, podemos querer pre-seleccionarlo
+        if 'initial' in kwargs and 'cliente' in kwargs['initial']:
+            self.fields['cliente'].disabled = True

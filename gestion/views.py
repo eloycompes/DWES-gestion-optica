@@ -3,10 +3,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages  # <--- Este es el IMPORT CORRECTO
 from django.db.models import Q
 from django.db import transaction
+from django.utils import timezone
 
 # Tus modelos y formularios
-from .forms import ClienteForm, EncargoForm, GraduacionForm, ConsultaForm, VentaRapidaForm
-from .models import Consulta, Cliente, DetallePedido, Encargo, Graduacion, Producto, Pedido
+from .forms import CitaForm, ClienteForm, EncargoForm, GraduacionForm, ConsultaForm, VentaRapidaForm
+from .models import Cita, Consulta, Cliente, DetallePedido, Encargo, Graduacion, Producto, Pedido
+
+def home(request):
+    return render(request, 'gestion/home.html')
 
 def crear_cliente(request):
     if request.method == 'POST':
@@ -289,3 +293,33 @@ def eliminar_encargo(request, encargo_id):
         return redirect('detalle_cliente', cliente_id=cliente_id)
     
     return redirect('lista_clientes')
+
+def agenda(request):
+    # Mostramos las citas desde hoy en adelante, ordenadas por fecha
+    citas = Cita.objects.filter(fecha_hora__gte=timezone.now()).order_by('fecha_hora')
+    return render(request, 'gestion/agenda.html', {'citas': citas})
+
+def nueva_cita(request, cliente_id=None):
+    cliente = None
+    if cliente_id:
+        cliente = get_object_or_404(Cliente, id=cliente_id)
+    
+    if request.method == 'POST':
+        form = CitaForm(request.POST)
+        if form.is_valid():
+            cita = form.save(commit=False)
+            if cliente:
+                cita.cliente = cliente
+            cita.save()
+            return redirect('agenda')
+    else:
+        # Si venimos de la ficha del cliente, lo pasamos como valor inicial
+        form = CitaForm(initial={'cliente': cliente}) if cliente else CitaForm()
+
+    return render(request, 'gestion/form_cita.html', {'form': form, 'cliente': cliente})
+
+def cambiar_estado_cita(request, cita_id, nuevo_estado):
+    cita = get_object_or_404(Cita, id=cita_id)
+    cita.estado = nuevo_estado
+    cita.save()
+    return redirect('agenda')

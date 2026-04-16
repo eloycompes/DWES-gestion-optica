@@ -2,8 +2,11 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    # Página de inicio
+    path('', views.home, name='home'),
+
     # Clientes
-    path('', views.lista_clientes, name='lista_clientes'),
+    path('clientes/', views.lista_clientes, name='lista_clientes'),
     path('cliente/<int:cliente_id>/', views.detalle_cliente, name='detalle_cliente'),
     path('cliente/nuevo/', views.crear_cliente, name='crear_cliente'),
     path('cliente/editar/<int:cliente_id>/', views.editar_cliente, name='editar_cliente'),
@@ -26,4 +29,10 @@ urlpatterns = [
     path('encargo/<int:encargo_id>/entregar/', views.entregar_encargo, name='entregar_encargo'),
     path('encargo/<int:encargo_id>/editar/', views.editar_encargo, name='editar_encargo'),
     path('encargo/eliminar/<int:encargo_id>/', views.eliminar_encargo, name='eliminar_encargo'),
+
+    # Citas
+    path('agenda/', views.agenda, name='agenda'),
+    path('cita/nueva/', views.nueva_cita, name='nueva_cita'),
+    path('cliente/<int:cliente_id>/nueva-cita/', views.nueva_cita, name='nueva_cita_cliente'),
+    path('cita/<int:cita_id>/estado/<str:nuevo_estado>/', views.cambiar_estado_cita, name='cambiar_estado_cita'),
 ]

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-primary">Óptica Central</h1>
+        <p class="lead text-muted">Panel de Gestión</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow border-0 hover-shadow transition">
+                <div class="card-body text-center p-4">
+                    <div class="display-6 mb-3">👥</div>
+                    <h4 class="card-title fw-bold">Clientes</h4>
+                    <p class="text-muted small">Gestión de base de datos, graduaciones y expedientes.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'lista_clientes' %}" class="btn btn-primary">
+                            <i class="fas fa-list me-2"></i>Ver Listado
+                        </a>
+                        <a href="{% url 'crear_cliente' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-plus me-2"></i>Nuevo Cliente
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow border-0 hover-shadow transition">
+                <div class="card-body text-center p-4">
+                    <div class="display-6 mb-3">🤝</div>
+                    <h4 class="card-title fw-bold">Venta Rápida</h4>
+                    <p class="text-muted small">Ventas de accesorios, líquidos y productos sin graduación.</p>
+                    <div class="d-grid mt-auto">
+                        <a href="{% url 'venta_rapida' %}" class="btn btn-success py-3 fw-bold">
+                            <i class="fas fa-cash-register me-2"></i>Nueva Venta
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow border-0 hover-shadow transition">
+                <div class="card-body text-center p-4">
+                    <div class="display-6 mb-3">📆</div>
+                    <h4 class="card-title fw-bold">Citas</h4>
+                    <p class="text-muted small">Agenda de revisiones, entregas y visitas comerciales.</p>
+                    <div class="d-grid mt-auto">
+                        <a href="{% url 'agenda' %}" class="btn btn-info text-white py-3 fw-bold">
+                            <i class="fas fa-calendar-alt me-2"></i>Abrir Agenda
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .transition { transition: all 0.3s ease; }
+    .hover-shadow:hover { 
+        transform: translateY(-10px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    }
+</style>
+{% endblock %}

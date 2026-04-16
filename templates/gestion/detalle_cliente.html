@@ -43,7 +43,7 @@
                             onsubmit="return confirm('¿Estás seguro de eliminar este cliente? Se borrarán todos sus encargos y graduaciones.');">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-outline-danger">
-                                <i class="fas fa-trash"></i> Eliminar Cliente
+                                <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </form>
                     </div>
@@ -145,7 +145,7 @@
                                                     onsubmit="return confirm('¿ESTÁS SEGURO? Esta acción eliminará el encargo permanentemente.');">
                                                     {% csrf_token %}
                                                     <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
-                                                        <i class="fas fa-trash"></i>Eliminar
+                                                        <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
                                             {% else %}
