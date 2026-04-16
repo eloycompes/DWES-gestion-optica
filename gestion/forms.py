@@ -26,7 +26,7 @@ class ClienteForm(forms.ModelForm):
             self.fields['fecha_nacimiento'].initial = self.instance.fecha_nacimiento.strftime('%Y-%m-%d')
 
 class GraduacionForm(forms.ModelForm):
-    # Campos virtuales que veremos en el HTML
+    # Campos virtuales que se verán en el HTML
     od_q1 = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', 'placeholder': '7.75'}))
     od_q2 = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', 'placeholder': '7.60'}))
     oi_q1 = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control form-control-sm', 'placeholder': '7.80'}))
@@ -34,7 +34,7 @@ class GraduacionForm(forms.ModelForm):
 
     class Meta:
         model = Graduacion
-        # IMPORTANTE: Excluimos los originales para gestionarlos nosotros en la vista
+        # Excluimos los originales para gestionarlos nosotros en la vista
         exclude = ['consulta', 'od_queratometria', 'oi_queratometria']
         
         widgets = {

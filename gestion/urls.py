@@ -17,9 +17,6 @@ urlpatterns = [
     path('consulta/<int:consulta_id>/graduacion/', views.registrar_graduacion, name='registrar_graduacion'),
     path('cliente/<int:cliente_id>/nueva-consulta/', views.crear_consulta, name='crear_consulta'),
 
-    # Pedidos
-    path('pedidos/', views.lista_pedidos, name='lista_pedidos'),
-
     # Venta rápida
     path('venta-rapida/', views.venta_rapida, name='venta_rapida'),
 

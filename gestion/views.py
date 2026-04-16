@@ -91,10 +91,6 @@ def detalle_consulta(request, consulta_id):
         'graduacion': graduacion
     })
 
-def lista_pedidos(request):
-    # Por ahora solo devolvemos un texto simple
-    from django.http import HttpResponse
-    return HttpResponse("Aquí se verá el listado de pedidos")
 
 def registrar_graduacion(request, consulta_id):
     consulta = get_object_or_404(Consulta, id=consulta_id)
