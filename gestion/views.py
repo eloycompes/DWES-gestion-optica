@@ -187,21 +187,24 @@ def nuevo_encargo(request, cliente_id):
 
 def editar_encargo(request, encargo_id):
     encargo = get_object_or_404(Encargo, id=encargo_id)
-    # Guardamos el ID del cliente para volver a su expediente luego
     cliente_id = encargo.cliente.id 
     
+    # IMPORTANTE: Necesitamos enviar las monturas para que el datalist del HTML se llene
+    monturas_db = Producto.objects.filter(categoria__nombre="Monturas")
+    
     if request.method == 'POST':
-        form = EncargoForm(request.POST, instance=encargo)
+        form = EncargoForm(request.POST, instance=encargo, cliente=encargo.cliente)
         if form.is_valid():
             form.save()
             return redirect('detalle_cliente', cliente_id=cliente_id)
     else:
-        form = EncargoForm(instance=encargo)
+        form = EncargoForm(instance=encargo, cliente=encargo.cliente)
     
-    return render(request, 'gestion/nuevo_encargo.html', { # Reutilizamos el template de creación
+    return render(request, 'gestion/nuevo_encargo.html', {
         'form': form,
         'cliente': encargo.cliente,
-        'editando': True
+        'editando': True,
+        'monturas_db': monturas_db  # <--- ESTA LÍNEA ES LA QUE FALTA
     })
 
 def marcar_pagado(request, encargo_id):

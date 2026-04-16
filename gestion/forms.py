@@ -66,58 +66,73 @@ class VentaRapidaForm(forms.ModelForm):
         }
 
 
+from django import forms
+from .models import Encargo, Producto, Graduacion, Usuario
+
 class EncargoForm(forms.ModelForm):
-    # Cambiamos montura_marca_modelo por un buscador de la base de datos
+    # Campo extra para el buscador
     montura = forms.ModelChoiceField(
-        queryset=Producto.objects.filter(categoria__nombre="Monturas"), # Filtra solo monturas
+        queryset=Producto.objects.filter(categoria__nombre="Monturas"),
         required=False,
         label="Buscar Montura (Código o Nombre)",
         widget=forms.Select(attrs={'class': 'form-control buscador-monturas'})
     )
+
     def __init__(self, *args, **kwargs):
+        # Extraemos el cliente antes de llamar al super
         cliente = kwargs.pop('cliente', None)
         super().__init__(*args, **kwargs)
         
+        # A. Si estamos EDITANDO: Pre-cargamos el buscador con la montura guardada
+        if self.instance and self.instance.pk:
+            prod = Producto.objects.filter(nombre=self.instance.montura_marca_modelo).first()
+            if prod:
+                self.fields['montura'].initial = prod
+
+        # B. Filtrar graduaciones solo del cliente actual
         if cliente:
             self.fields['graduacion'].queryset = Graduacion.objects.filter(
                 consulta__cliente=cliente
             ).order_by('-consulta__fecha')
         
-        # CAMBIO AQUÍ: Usamos tu modelo Usuario
+        # C. Cargar lista de vendedores
         self.fields['vendedor'].queryset = Usuario.objects.all()
         self.fields['vendedor'].empty_label = "Seleccione un vendedor"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        montura_seleccionada = cleaned_data.get('montura')
+        
+        # D. Si se eligió una montura del buscador, la pasamos al campo de texto del modelo
+        if montura_seleccionada:
+            cleaned_data['montura_marca_modelo'] = montura_seleccionada.nombre
+            # Si el precio está vacío, ponemos el del producto
+            if not cleaned_data.get('montura_precio'):
+                cleaned_data['montura_precio'] = montura_seleccionada.precio
+                
+        return cleaned_data
 
     class Meta:
         model = Encargo
         exclude = ['cliente', 'fecha_encargo', 'estado', 'total_encargo']
-        
         widgets = {
-            # Montura
-            'montura_marca_modelo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Marca, modelo, calibre...'}),
+            'montura_marca_modelo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Marca, modelo...'}),
             'montura_en_stock': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'montura_precio': forms.NumberInput(attrs={'class': 'form-control precio-input', 'step': '0.01'}),
             'pagado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'metodo_pago': forms.Select(attrs={'class': 'form-select'}),
-            
-            # Común Cristales
-            'proveedor_lentes': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Essilor, Hoya...'}),
-            'material': forms.Select(attrs={'class': 'form-select', 'id': 'id_material'}),
-            
-            # Ojo Derecho (OD)
-            'od_tipo': forms.Select(attrs={'class': 'form-select', 'id': 'id_od_tipo'}),
-            'od_indice': forms.Select(attrs={'class': 'form-select', 'id': 'id_od_indice'}), # Widget de Select para los índices
-            'od_codigo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código interno'}),
-            'od_nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre comercial lente'}),
+            'proveedor_lentes': forms.TextInput(attrs={'class': 'form-control'}),
+            'material': forms.Select(attrs={'class': 'form-select'}),
+            'od_tipo': forms.Select(attrs={'class': 'form-select'}),
+            'od_indice': forms.Select(attrs={'class': 'form-select'}),
+            'od_codigo': forms.TextInput(attrs={'class': 'form-control'}),
+            'od_nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'od_precio': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-
-            # Ojo Izquierdo (OI)
-            'oi_tipo': forms.Select(attrs={'class': 'form-select', 'id': 'id_oi_tipo'}),
-            'oi_indice': forms.Select(attrs={'class': 'form-select', 'id': 'id_oi_indice'}), # Widget de Select para los índices
-            'oi_codigo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código interno'}),
-            'oi_nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre comercial lente'}),
+            'oi_tipo': forms.Select(attrs={'class': 'form-select'}),
+            'oi_indice': forms.Select(attrs={'class': 'form-select'}),
+            'oi_codigo': forms.TextInput(attrs={'class': 'form-control'}),
+            'oi_nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'oi_precio': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-
-            # Otros
             'vendedor': forms.Select(attrs={'class': 'form-select'}),
             'graduacion': forms.Select(attrs={'class': 'form-select'}),
         }
