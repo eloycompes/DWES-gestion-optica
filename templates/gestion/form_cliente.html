@@ -12,6 +12,13 @@
                     </h4>
                 </div>
                 <div class="card-body p-4">
+                    {% if form.errors %}
+                        <div class="alert alert-danger shadow-sm">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Error:</strong> Por favor, revisa los campos marcados abajo.
+                            {# Opcional: {{ form.errors }} #}
+                        </div>
+                    {% endif %}
                     <form method="post" novalidate>
                         {% csrf_token %}
                         
@@ -39,6 +46,12 @@
                                 <label class="form-label fw-bold">Fecha de Nacimiento</label>
                                 {{ form.fecha_nacimiento }}
                             </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold">Correo Electrónico</label>
+                                {{ form.email }}
+                            </div>
+
                         </div>
 
                         <hr class="my-4">

@@ -25,9 +25,15 @@ def editar_cliente(request, cliente_id):
         if form.is_valid():
             form.save()
             return redirect('detalle_cliente', cliente_id=cliente.id)
+        # Si NO es válido, el código sigue hacia abajo y vuelve a renderizar el form con los errores
     else:
         form = ClienteForm(instance=cliente)
-    return render(request, 'gestion/form_cliente.html', {'form': form, 'editando': True})
+    
+    return render(request, 'gestion/form_cliente.html', {
+        'form': form, 
+        'editando': True,
+        'cliente': cliente # Opcional, para el título
+    })
 
 def eliminar_cliente(request, cliente_id):
     """Vista para borrar un cliente"""

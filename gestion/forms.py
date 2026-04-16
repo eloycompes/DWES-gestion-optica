@@ -5,14 +5,25 @@ from .models import Cliente, Encargo, Graduacion, Pedido, Consulta, Producto, Us
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['dni', 'nombre', 'apellidos', 'telefono', 'fecha_nacimiento']
+        fields = ['dni', 'nombre', 'apellidos', 'telefono', 'fecha_nacimiento', 'email']
         widgets = {
-            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'dni': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '12345678X'}),
+            # El secreto está en format='%Y-%m-%d'
+            'fecha_nacimiento': forms.DateInput(
+                format='%Y-%m-%d',
+                attrs={'type': 'date', 'class': 'form-control'}
+            ),
+            'dni': forms.TextInput(attrs={'class': 'form-control'}),
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'apellidos': forms.TextInput(attrs={'class': 'form-control'}),
             'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Esto asegura que el valor cargado también tenga el formato correcto
+        if self.instance and self.instance.fecha_nacimiento:
+            self.fields['fecha_nacimiento'].initial = self.instance.fecha_nacimiento.strftime('%Y-%m-%d')
 
 class GraduacionForm(forms.ModelForm):
     # Campos virtuales que veremos en el HTML
